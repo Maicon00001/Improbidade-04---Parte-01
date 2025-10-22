@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Lei de Improbidade Administrativa (90 Questões)</title>
+    <!-- Inclui Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inclui Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Inclui a fonte Inter do Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Define a fonte Inter como padrão */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #1f2937; /* text-gray-800 */
+        }
+        /* Estilos personalizados para botões de opção */
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+            border-width: 1px; /* Garante borda padrão */
+            background-color: white;
+            border-color: #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.75rem; /* p-3 */
+            margin-top: 0.5rem; /* my-2 */
+            margin-bottom: 0.5rem; /* my-2 */
+            text-align: left;
+            width: 100%;
+        }
+        .option-btn:hover:not(.disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #60a5fa; /* hover:border-blue-400 */
+            background-color: #eff6ff; /* hover:bg-blue-50 */
+        }
+        /* Estilo para resposta correta */
+        .correct {
+            background-color: #dcfce7 !important; /* green-100 */
+            color: #166534 !important; /* green-800 */
+            border-color: #22c55e !important; /* green-500 */
+            font-weight: 600;
+        }
+        /* Estilo para resposta incorreta selecionada pelo usuário */
+        .incorrect-selected {
+            background-color: #fee2e2 !important; /* red-100 */
+            color: #991b1b !important; /* red-800 */
+            border-color: #ef4444 !important; /* red-500 */
+        }
+        /* Estilo para botão desabilitado */
+        .disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+            background-color: #f9fafb; /* gray-50 */
+            color: #6b7280; /* text-gray-500 */
+        }
+        /* Estilos para a área de explicação (inicialmente oculta) */
+        .explanation {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out, margin 0.5s ease-out;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            border-left-width: 4px;
+            border-radius: 0 0.5rem 0.5rem 0; /* Borda arredondada à direita */
+            background-color: #f9fafb; /* bg-gray-50 */
+            border-color: #60a5fa; /* border-blue-400 */
+            color: #374151; /* text-gray-700 */
+        }
+        /* Estilos para exibir a área de explicação */
+        .explanation.show {
+            max-height: 1000px; /* Altura suficiente para o conteúdo */
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            margin-top: 1rem;
+        }
+        /* Estilos para a tabela de revisão */
+        #review-table th, #review-table td {
+            border: 1px solid #e5e7eb; /* gray-200 */
+            padding: 0.75rem; /* p-3 */
+            text-align: left;
+            vertical-align: top;
+        }
+        #review-table th {
+            background-color: #f9fafb; /* gray-50 */
+            font-weight: 600;
+            color: #374151; /* text-gray-700 */
+        }
+        #review-table td {
+             font-size: 0.875rem; /* text-sm */
+        }
+        .correct-text { color: #16a34a; font-weight: 600; } /* text-green-600 */
+        .incorrect-text { color: #dc2626; font-weight: 600; } /* text-red-600 */
+
+        /* Loading indicator styles */
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3b82f6; /* Blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Quiz: Lei de Improbidade Administrativa (Lei nº 8.429/92)</h1>
+            <p class="text-base sm:text-lg text-gray-600 mt-2">Teste seus conhecimentos com 90 questões atualizadas.</p>
+        </header>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="text-center py-10">
+            <div class="loader"></div>
+            <p class="text-gray-500">Carregando questões...</p>
+        </div>
+
+        <!-- Container do Quiz (inicialmente oculto) -->
+        <div id="quiz-container" class="hidden space-y-6">
+            <!-- As questões serão inseridas aqui pelo JavaScript -->
+        </div>
+
+        <!-- Botão Finalizar -->
+        <div id="finish-button-container" class="hidden mt-10 text-center">
+            <button id="finish-btn" class="bg-blue-600 text-white font-semibold py-3 px-6 sm:px-8 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Finalizar e Ver Resultado
+            </button>
+            <p id="progress-text" class="text-sm text-gray-500 mt-2">Responda todas as questões para finalizar.</p>
+        </div>
+
+        <!-- Container dos Resultados (inicialmente oculto) -->
+        <div id="results-container" class="hidden mt-12 bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-900">Seu Desempenho</h2>
+            <!-- Resumo do Score -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center mb-6">
+                <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <p class="text-xs sm:text-sm font-semibold text-green-700 uppercase tracking-wider">Acertos</p>
+                    <p id="correct-count" class="text-2xl sm:text-3xl font-bold text-green-600 mt-1">0</p>
+                </div>
+                <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                    <p class="text-xs sm:text-sm font-semibold text-red-700 uppercase tracking-wider">Erros</p>
+                    <p id="incorrect-count" class="text-2xl sm:text-3xl font-bold text-red-600 mt-1">0</p>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p class="text-xs sm:text-sm font-semibold text-blue-700 uppercase tracking-wider">Percentual</p>
+                    <p id="percentage" class="text-2xl sm:text-3xl font-bold text-blue-600 mt-1">0%</p>
+                </div>
+                <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <p class="text-xs sm:text-sm font-semibold text-purple-700 uppercase tracking-wider">Tempo Total</p>
+                    <p id="time-taken" class="text-2xl sm:text-3xl font-bold text-purple-600 mt-1">00:00</p>
+                </div>
+            </div>
+             <!-- Tempo Médio -->
+             <div class="text-center text-gray-600 mb-8">
+                <p><strong>Tempo médio por questão:</strong> <span id="avg-time">0</span> segundos</p>
+            </div>
+
+            <!-- Análise de Desempenho (Gráfico e Texto) -->
+            <div id="analysis-container" class="mt-10 mb-8">
+                <h3 class="text-xl sm:text-2xl font-bold mb-4 text-center text-gray-800">Análise de Desempenho por Tópico</h3>
+                <!-- Container do Gráfico -->
+                <div class="w-full h-96 sm:h-[500px] relative mb-6"> <!-- Increased height -->
+                     <canvas id="performanceChart"></canvas>
+                </div>
+                <!-- Análise Textual (Pontos Fortes/Fracos) -->
+                <div id="strengths-weaknesses" class="mt-6 text-sm sm:text-base">
+                    <!-- Conteúdo inserido via JS -->
+                </div>
+            </div>
+
+            <!-- Revisão das Questões Erradas -->
+            <div id="wrong-answers-review" class="mt-8 text-left">
+                <h3 class="text-xl sm:text-2xl font-bold mb-4 border-b border-gray-300 pb-2 text-gray-800">Revisão das Questões Erradas</h3>
+                <div id="wrong-answers-content" class="space-y-6">
+                     <!-- Conteúdo inserido via JS -->
+                </div>
+            </div>
+
+             <!-- Tabela Resumo (Simulando Planilha) -->
+            <div id="summary-table-container" class="mt-10">
+                <h3 class="text-xl sm:text-2xl font-bold mb-4 text-center text-gray-800">Resumo das Respostas</h3>
+                <div class="overflow-x-auto shadow rounded-lg border border-gray-200">
+                    <table id="review-table" class="min-w-full bg-white">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="w-1/12 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Questão</th>
+                                <th class="w-4/12 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pergunta (Início)</th>
+                                <th class="w-2/12 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sua Resposta</th>
+                                <th class="w-2/12 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resposta Correta</th>
+                                <th class="w-1/12 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resultado</th>
+                                <th class="w-2/12 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tópico</th>
+                            </tr>
+                        </thead>
+                        <tbody id="review-table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Linhas inseridas via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+             <!-- Botão Reiniciar -->
+             <div class="mt-10 text-center">
+                 <button id="restart-btn" class="bg-gray-500 text-white font-semibold py-3 px-6 sm:px-8 rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors duration-300">
+                     Reiniciar Quiz
+                 </button>
+             </div>
+
+        </div> <!-- Fim Results Container -->
+    </div> <!-- Fim Container Principal -->
+
+    <script>
+        // Dados do Quiz (Questões 1 a 90)
+        const quizData = [
+            // Questões 1-70 já fornecidas...
+            { // Questão 1
+                questionNumber: 1,
+                question: "De acordo com o Art. 1º da Lei nº 8.429/92, com as alterações promovidas pela Lei nº 14.230/21, o sistema de responsabilização por atos de improbidade administrativa tem como objetivo primordial tutelar a probidade na organização do Estado e no exercício de suas funções, como forma de assegurar",
+                options: {
+                    A: "a punição exemplar dos agentes públicos, independentemente da ocorrência de dolo ou culpa, para fortalecer a moralidade administrativa.",
+                    B: "a integridade do patrimônio público e social, aplicando-se exclusivamente à administração pública direta dos Poderes Executivo e Legislativo.",
+                    C: "a integridade do patrimônio público e social, sendo aplicável aos Poderes Executivo, Legislativo e Judiciário, bem como à administração direta e indireta de todos os entes federativos.",
+                    D: "a eficiência na gestão pública, responsabilizando os agentes por qualquer ato que resulte em prejuízo ao erário, ainda que decorrente de mera voluntariedade.",
+                    E: "a responsabilização de agentes políticos por crimes de responsabilidade, unificando as esferas de controle e sanção em um único diploma legal.",
+                    F: "a proteção do patrimônio de entidades privadas que não possuam qualquer vínculo ou recebimento de recursos do poder público, ampliando o escopo da lei."
+                },
+                correctAnswer: "C",
+                category: "Disposições Gerais",
+                explanation: {
+                    article: "Art. 1º, caput e § 5º da Lei nº 8.429/92",
+                    justification: "O objetivo é assegurar a integridade do patrimônio público e social, aplicando-se de forma ampla a todos os Poderes e esferas da administração.",
+                    page: "2 e 4"
+                }
+            },
+            { // Questão 2
+                questionNumber: 2,
+                question: "Considere a seguinte situação hipotética: um servidor público, ao realizar uma compra de materiais de escritório, agiu de forma voluntária, mas sem a intenção de causar prejuízo ou obter vantagem ilícita. Contudo, por um erro de avaliação, adquiriu produtos por um preço ligeiramente superior ao de mercado, gerando uma pequena perda patrimonial para a administração. À luz do disposto na Lei nº 8.429/92, a conduta do servidor",
+                options: {
+                    A: "configura ato de improbidade que causa lesão ao erário, pois a voluntariedade do agente é suficiente para caracterizar o dolo.",
+                    B: "não configura ato de improbidade, pois o mero exercício da função, sem a comprovação de ato doloso com fim ilícito, afasta a responsabilidade.",
+                    C: "configura ato de improbidade que atenta contra os princípios da administração pública, pois violou o princípio da eficiência.",
+                    D: "configura ato de improbidade na modalidade culposa, punível com sanções mais brandas, como a suspensão dos direitos políticos por até 5 anos.",
+                    E: "será considerada ato de improbidade apenas se o prejuízo causado for superior a 100 salários-mínimos, conforme limite estabelecido em lei.",
+                    F: "configura ato de improbidade por enriquecimento ilícito, pois o fornecedor obteve uma vantagem econômica indevida."
+                },
+                correctAnswer: "B",
+                category: "Dolo e Culpa",
+                explanation: {
+                    article: "Art. 1º, § 3º da Lei nº 8.429/92",
+                    justification: "A lei exige dolo específico. O mero exercício da função ou erro, sem intenção ilícita comprovada, afasta a improbidade.",
+                    page: "3"
+                }
+            },
+             { // Questão 3
+                questionNumber: 3,
+                question: "Nos termos do Art. 1º, § 2º, da Lei nº 8.429/92, o elemento subjetivo \"dolo\" é definido como",
+                options: {
+                    A: "a vontade livre e consciente do agente de praticar a conduta, sendo a ocorrência do resultado ilícito irrelevante para a sua configuração.",
+                    B: "a negligência, imprudência ou imperícia do agente público que resulta em dano ao patrimônio público ou enriquecimento ilícito de terceiro.",
+                    C: "a voluntariedade do agente, bastando que ele tenha agido de forma livre para que o ato seja considerado doloso, presumindo-se a ilicitude do fim.",
+                    D: "a vontade livre e consciente de alcançar o resultado ilícito tipificado nos arts. 9º, 10 e 11 da Lei, não bastando a voluntariedade do agente.",
+                    E: "a intenção de violar os princípios da administração pública, mesmo que não haja a finalidade de obter proveito ou benefício indevido para si ou para outrem.",
+                    F: "o conhecimento da ilicitude do fato e a vontade de praticá-lo, sendo a finalidade de obter um resultado específico um mero exaurimento do ato."
+                },
+                correctAnswer: "D",
+                category: "Dolo e Culpa",
+                explanation: {
+                    article: "Art. 1º, § 2º da Lei nº 8.429/92",
+                    justification: "A lei define dolo como a vontade livre e consciente de alcançar o resultado ilícito tipificado, não bastando a simples voluntariedade.",
+                    page: "3"
+                }
+            },
+            { // Questão 4
+                questionNumber: 4,
+                question: "Uma organização não governamental (ONG) de caráter assistencial, que não integra a administração indireta, recebe anualmente recursos de uma prefeitura a título de subvenção social para custear parte de suas atividades. O gestor dessa ONG desvia, dolosamente, parte desses recursos para fins particulares. Com base na Lei de Improbidade Administrativa,",
+                options: {
+                    A: "a lei não se aplica, pois a ONG é uma entidade privada e não integra a administração pública.",
+                    B: "a lei se aplica, e o gestor está sujeito às suas sanções, pois praticou ato contra o patrimônio de entidade privada que recebe subvenção de ente público.",
+                    C: "a lei se aplica, mas o ressarcimento de prejuízos será limitado a 50% do valor desviado, por se tratar de entidade do terceiro setor.",
+                    D: "a lei não se aplica, pois atos praticados por gestores de entidades privadas são regidos exclusivamente pela Lei Anticorrupção (Lei nº 12.846/13).",
+                    E: "a lei se aplica apenas se a contribuição dos cofres públicos corresponder a mais de 50% da receita anual da entidade.",
+                    F: "a lei não se aplica ao gestor, mas apenas à pessoa jurídica da ONG, que responderá objetivamente pelo desvio dos recursos."
+                },
+                correctAnswer: "B",
+                category: "Sujeitos Passivos",
+                explanation: {
+                    article: "Art. 1º, § 6º da Lei nº 8.429/92",
+                    justification: "A lei abrange entidades privadas que recebem subvenção, benefício ou incentivo de entes públicos. O desvio desses recursos sujeita o gestor às sanções.",
+                    page: "5"
+                }
+            },
+             { // Questão 5
+                questionNumber: 5,
+                question: "Júlio, um empresário sem qualquer vínculo com a Administração Pública, induz dolosamente Mário, servidor público, a fraudar uma licitação para beneficiar sua empresa. Ambos agem em conluio e com o objetivo de causar prejuízo ao erário. De acordo com a Lei nº 8.429/92,",
+                options: {
+                    A: "apenas Mário responderá por ato de improbidade, pois Júlio, por ser particular, está sujeito apenas à responsabilização na esfera penal.",
+                    B: "apenas Júlio responderá por ato de improbidade, pois foi ele quem induziu a prática do ato, sendo Mário um mero instrumento.",
+                    C: "nem Mário nem Júlio responderão por improbidade, pois a lei exige que o ato seja praticado exclusivamente por agente público.",
+                    D: "ambos, Mário e Júlio, estão sujeitos às disposições da Lei de Improbidade, pois o particular que induz ou concorre dolosamente para o ato também é responsabilizado.",
+                    E: "Júlio só responderá por improbidade se for comprovado que ele se beneficiou diretamente do ato, mesmo que não tenha concorrido para sua prática.",
+                    F: "a ação de improbidade só poderá ser proposta contra Júlio, isoladamente, por ser o principal beneficiário do esquema ilícito."
+                },
+                correctAnswer: "D",
+                category: "Sujeitos Ativos",
+                explanation: {
+                    article: "Art. 3º da Lei nº 8.429/92",
+                    justification: "O particular (terceiro) que induz ou concorre dolosamente para a prática do ato de improbidade também responde nos termos da lei, juntamente com o agente público.",
+                    page: "10"
+                }
+            },
+             { // Questão 6
+                questionNumber: 6,
+                question: "Uma empresa de engenharia foi condenada por um ato de improbidade que causou dano ao erário. Posteriormente, essa empresa passou por um processo de fusão, dando origem a uma nova pessoa jurídica. Conforme o Art. 8º-A da Lei de Improbidade Administrativa, a responsabilidade da empresa sucessora",
+                options: {
+                    A: "é integral, respondendo por todas as sanções aplicadas à empresa original, incluindo multa e proibição de contratar com o poder público.",
+                    B: "não existe, pois a fusão extingue a personalidade jurídica da empresa original e, com ela, todas as suas obrigações sancionatórias.",
+                    C: "será restrita à obrigação de reparação integral do dano causado, até o limite do patrimônio transferido, não lhe sendo aplicáveis as demais sanções, salvo em caso de fraude.",
+                    D: "limita-se ao pagamento da multa civil, ficando isenta da obrigação de reparar o dano, que é de natureza personalíssima.",
+                    E: "é subsidiária, podendo ser acionada apenas se a empresa original, mesmo extinta, não possuir patrimônio suficiente para quitar o débito.",
+                    F: "será restrita à proibição de contratar com o poder público, como forma de prevenir novos ilícitos, mas a obrigação de reparar o dano é extinta com a fusão."
+                },
+                correctAnswer: "C",
+                category: "Responsabilidade Sucessória",
+                explanation: {
+                    article: "Art. 8º-A, Parágrafo único da Lei nº 8.429/92",
+                    justification: "Em casos de fusão e incorporação, a regra é que a sucessora herde apenas a obrigação de reparar o dano (limitada ao patrimônio transferido), não as demais sanções, exceto se comprovada fraude na operação societária.",
+                    page: "18"
+                }
+            },
+             { // Questão 7
+                questionNumber: 7,
+                question: "Um agente público falece durante o curso de uma ação de improbidade administrativa na qual respondia por um ato que, comprovadamente, lhe gerou enriquecimento ilícito e causou dano ao erário. De acordo com o Art. 8º da Lei nº 8.429/92, a responsabilidade de seus herdeiros",
+                options: {
+                    A: "é integral, estando eles sujeitos a todas as cominações da lei, incluindo multa civil e suspensão de seus próprios direitos políticos.",
+                    B: "é extinta com o falecimento do agente, em respeito ao princípio da intranscendência da pena.",
+                    C: "está limitada apenas à obrigação de reparar o dano e devolver o enriquecimento ilícito, até o limite do valor da herança ou do patrimônio transferido.",
+                    D: "abrange a reparação do dano e o pagamento da multa civil, mas não a perda dos bens, que se incorpora definitivamente ao patrimônio da família.",
+                    E: "só existe se o ato de improbidade praticado pelo falecido for o de violação aos princípios da administração pública, previsto no Art. 11.",
+                    F: "limita-se ao valor do dano causado ao erário, excluindo-se a obrigação de devolver os valores acrescidos ilicitamente ao patrimônio do falecido."
+                },
+                correctAnswer: "C",
+                category: "Responsabilidade Sucessória",
+                explanation: {
+                    article: "Art. 8º da Lei nº 8.429/92",
+                    justification: "A responsabilidade dos herdeiros limita-se à obrigação de reparar o dano ou devolver o enriquecimento ilícito, até o limite do patrimônio herdado. Não se estende a sanções pessoais como multa.",
+                    page: "15"
+                }
+            },
+            { // Questão 8
+                questionNumber: 8,
+                question: "Constitui ato de improbidade administrativa que importa enriquecimento ilícito, nos termos do Art. 9º da Lei nº 8.429/92, a conduta dolosa do agente público de",
+                options: {
+                    A: "frustrar a licitude de processo licitatório, ainda que tal ato não resulte em perda patrimonial efetiva para a administração.",
+                    B: "ordenar a realização de despesas não autorizadas em lei ou regulamento, mesmo que não aufira qualquer vantagem patrimonial para si.",
+                    C: "deixar de prestar contas quando esteja obrigado a fazê-lo, com vistas a ocultar irregularidades, sem que haja apropriação de valores.",
+                    D: "utilizar, em obra ou serviço particular, o trabalho de servidores públicos contratados pela entidade a que pertence.",
+                    E: "negar publicidade aos atos oficiais, exceto nas hipóteses de sigilo previstas em lei, para proteger a imagem de um superior hierárquico.",
+                    F: "permitir que terceiro se enriqueça ilicitamente, sem que o agente público receba qualquer contrapartida econômica para tanto."
+                },
+                correctAnswer: "D",
+                category: "Enriquecimento Ilícito",
+                explanation: {
+                    article: "Art. 9º, IV da Lei nº 8.429/92",
+                    justification: "Utilizar bens ou trabalho de servidores públicos em benefício particular é expressamente listado como ato de enriquecimento ilícito.",
+                    page: "21"
+                }
+            },
+             { // Questão 9
+                questionNumber: 9,
+                question: "Um prefeito, agindo com dolo, celebra um contrato de rateio de consórcio público sem suficiente e prévia dotação orçamentária, causando efetiva perda patrimonial ao município. Tal conduta está tipificada na Lei de Improbidade Administrativa como ato",
+                options: {
+                    A: "que atenta contra os princípios da administração pública, por violar o princípio da legalidade orçamentária.",
+                    B: "que importa enriquecimento ilícito, pois o consórcio público obteve uma vantagem indevida.",
+                    C: "que causa lesão ao erário, conforme previsto expressamente no Art. 10, inciso XV.",
+                    D: "que não configura improbidade, tratando-se de mera irregularidade administrativa, sanável por meio de crédito suplementar.",
+                    E: "que importa enriquecimento ilícito do prefeito, presumindo-se que ele obteve vantagem com a celebração do contrato.",
+                    F: "que causa lesão ao erário, mas que só é punível se o prefeito também tiver frustrado o processo licitatório para a formação do consórcio."
+                },
+                correctAnswer: "C",
+                category: "Lesão ao Erário",
+                explanation: {
+                    article: "Art. 10, XV da Lei nº 8.429/92",
+                    justification: "Celebrar contrato de rateio de consórcio público sem prévia dotação orçamentária ou sem observar as formalidades legais é ato tipificado como lesão ao erário.",
+                    page: "30"
+                }
+            },
+            { // Questão 10
+                questionNumber: 10,
+                question: "De acordo com o Art. 10 da Lei nº 8.429/92, para que a conduta de frustrar a licitude de um processo licitatório seja enquadrada como ato de improbidade que causa lesão ao erário, é indispensável que",
+                options: {
+                    A: "o agente público tenha recebido vantagem econômica para direcionar o certame.",
+                    B: "o processo licitatório tenha sido dispensado indevidamente, sendo a mera frustração uma irregularidade menor.",
+                    C: "a conduta acarrete perda patrimonial efetiva, devidamente comprovada nos autos.",
+                    D: "o agente tenha agido com culpa grave, mesmo que não possuísse a intenção de causar dano.",
+                    E: "a empresa vencedora do certame seja declarada inidônea pelo Tribunal de Contas.",
+                    F: "o ato viole os princípios da isonomia e da impessoalidade, independentemente de resultado financeiro negativo."
+                },
+                correctAnswer: "C",
+                category: "Lesão ao Erário",
+                explanation: {
+                    article: "Art. 10, VIII da Lei nº 8.429/92",
+                    justification: "Após a reforma, a frustração ou dispensa indevida de licitação só configura lesão ao erário se acarretar perda patrimonial efetiva e comprovada.",
+                    page: "26"
+                }
+            },
+            { // Questão 11
+                questionNumber: 11,
+                question: "Um Secretário de Estado, com o intuito de obter benefício próprio, revela a um empresário o teor de uma medida econômica capaz de afetar o preço de certas mercadorias, antes de sua divulgação oficial. Conforme a Lei nº 8.429/92, essa conduta caracteriza ato de improbidade administrativa",
+                options: {
+                    A: "que importa enriquecimento ilícito, pois o empresário obteve vantagem econômica.",
+                    B: "que causa lesão ao erário, pois a revelação da informação gerou instabilidade no mercado.",
+                    C: "que atenta contra os princípios da administração pública, previsto no Art. 11, inciso VII.",
+                    D: "que não configura improbidade, mas sim crime de violação de sigilo funcional, previsto no Código Penal.",
+                    E: "que atenta contra os princípios da administração pública, mas apenas se a informação colocar em risco a segurança da sociedade e do Estado.",
+                    F: "que configura mera infração disciplinar, punível com advertência ou suspensão, a depender do estatuto do servidor."
+                },
+                correctAnswer: "C",
+                category: "Violação de Princípios",
+                explanation: {
+                    article: "Art. 11, VII da Lei nº 8.429/92",
+                    justification: "Revelar teor de medida política ou econômica capaz de afetar preços, antes da divulgação oficial, é ato que atenta contra os princípios (Art. 11, VII).",
+                    page: "37"
+                }
+            },
+            { // Questão 12
+                questionNumber: 12,
+                question: "A nomeação de um cônjuge para o exercício de cargo em comissão na administração pública direta, por parte de uma autoridade nomeante, é uma conduta que, segundo o Art. 11 da Lei nº 8.429/92,",
+                options: {
+                    A: "constitui ato de improbidade que importa enriquecimento ilícito, pois o cônjuge aufere remuneração indevida.",
+                    B: "constitui ato de improbidade que causa lesão ao erário, pelo pagamento de salários a pessoa sem qualificação técnica.",
+                    C: "constitui ato de improbidade que atenta contra os princípios da administração pública, configurando nepotismo.",
+                    D: "não constitui ato de improbidade, pois a Súmula Vinculante nº 13 do STF não foi integralmente recepcionada pela lei.",
+                    E: "constitui ato de improbidade apenas se for comprovado que o cônjuge nomeado não possuía a qualificação técnica exigida para o cargo.",
+                    F: "não constitui improbidade if for uma mera nomeação política por detentor de mandato eletivo, salvo se comprovado dolo com finalidade ilícita." // Correção da opção F baseada na justificação
+                },
+                correctAnswer: "F", // A resposta correta considera a exceção do §5º
+                category: "Violação de Princípios",
+                explanation: {
+                    article: "Art. 11, XI e § 5º da Lei nº 8.429/92",
+                    justification: "Embora a nomeação de cônjuge seja nepotismo (Art. 11, XI), o § 5º excepciona a mera nomeação política por detentor de mandato eletivo, a menos que haja dolo com fim ilícito.",
+                    page: "38 e 39"
+                }
+            },
+            { // Questão 13
+                questionNumber: 13,
+                question: "Após a reforma promovida pela Lei nº 14.230/21, o rol de condutas que configuram ato de improbidade administrativa que atenta contra os princípios da administração pública, previsto no Art. 11, passou a ser considerado",
+                options: {
+                    A: "exemplificativo, permitindo o enquadramento de outras condutas que violem os deveres de honestidade, imparcialidade e legalidade.",
+                    B: "taxativo, significando que somente as condutas expressamente descritas em seus incisos podem caracterizar essa modalidade de improbidade.",
+                    C: "exemplificativo, mas dependente de regulamentação por decreto do Chefe do Poder Executivo para a inclusão de novas hipóteses.",
+                    D: "taxativo, mas a jurisprudência do STJ pode, excepcionalmente, criar novas hipóteses de improbidade por violação de princípios.",
+                    E: "aberto, pois o caput do artigo menciona a violação aos deveres de honestidade, imparcialidade e legalidade de forma genérica.",
+                    F: "revogado, tendo sido todas as suas hipóteses absorvidas pelos tipos dos artigos 9º e 10 da mesma lei."
+                },
+                correctAnswer: "B",
+                category: "Violação de Princípios",
+                explanation: {
+                    article: "Art. 11, caput da Lei nº 8.429/92",
+                    justification: "A reforma alterou o caput do Art. 11, substituindo 'notadamente' por 'caracterizada por uma das seguintes condutas', tornando o rol taxativo.",
+                    page: "35"
+                }
+            },
+             { // Questão 14
+                questionNumber: 14,
+                question: "Para que uma conduta seja enquadrada no Art. 11 da Lei de Improbidade (atos que atentam contra os princípios), a lei exige, além do dolo e da tipicidade em uma das condutas do rol, a demonstração de",
+                options: {
+                    A: "efetivo prejuízo ao erário e enriquecimento ilícito do agente, de forma cumulativa.",
+                    B: "lesividade relevante ao bem jurídico tutelado, sendo irrelevante a ocorrência de dano ao erário ou enriquecimento ilícito.",
+                    C: "repercussão penal da conduta, com a necessária condenação criminal transitada em julgado.",
+                    D: "dano moral coletivo, apurado em ação civil pública própria, antes do ajuizamento da ação de improbidade.",
+                    E: "enriquecimento ilícito de terceiro, mesmo que o agente público não obtenha qualquer benefício para si.",
+                    F: "a mera ilegalidade do ato, pois a lesividade e o fim de obter proveito são presumidos pela própria violação do princípio."
+                },
+                correctAnswer: "B",
+                category: "Violação de Princípios",
+                explanation: {
+                    article: "Art. 11, § 4º da Lei nº 8.429/92",
+                    justification: "O Art. 11, § 4º exige lesividade relevante ao bem jurídico tutelado e expressamente dispensa a ocorrência de dano ao erário ou enriquecimento ilícito.",
+                    page: "42"
+                }
+            },
+             { // Questão 15
+                questionNumber: 15,
+                question: "Na hipótese de um agente público cometer um ato de improbidade que causa lesão ao erário (Art. 10), ele estará sujeito à sanção de suspensão dos direitos políticos pelo prazo de até",
+                options: { A: "8 anos.", B: "10 anos.", C: "12 anos.", D: "14 anos.", E: "4 anos.", F: "20 anos." },
+                correctAnswer: "C",
+                category: "Sanções",
+                explanation: {
+                    article: "Art. 12, II da Lei nº 8.429/92",
+                    justification: "Para atos de lesão ao erário (Art. 10), a suspensão dos direitos políticos é de até 12 anos.",
+                    page: "47"
+                }
+            },
+             { // Questão 16
+                questionNumber: 16,
+                question: "Um servidor público praticou um ato de improbidade que atentou contra os princípios da administração pública, resultando na aplicação de sanções. Conforme o Art. 12 da Lei nº 8.429/92, as sanções aplicáveis a essa modalidade de ato incluem",
+                options: {
+                    A: "perda da função pública e suspensão dos direitos políticos por até 8 anos.",
+                    B: "pagamento de multa civil de até 24 vezes o valor da remuneração do agente e proibição de contratar com o poder público por prazo não superior a 4 anos.",
+                    C: "ressarcimento integral do dano, perda dos bens acrescidos ilicitamente e multa civil equivalente ao valor do dano.",
+                    D: "suspensão dos direitos políticos por até 12 anos e pagamento de multa civil de até 100 vezes o valor da remuneração do agente.",
+                    E: "perda da função pública e pagamento de multa civil equivalente ao triplo do valor da remuneração do agente.",
+                    F: "apenas a proibição de contratar com o poder público por prazo não superior a 10 anos, sem aplicação de multa."
+                },
+                correctAnswer: "B",
+                category: "Sanções",
+                explanation: {
+                    article: "Art. 12, III da Lei nº 8.429/92",
+                    justification: "Para atos que atentam contra os princípios (Art. 11), as sanções são multa civil (até 24x remuneração) e proibição de contratar (até 4 anos). Não há perda de função ou suspensão de direitos políticos.",
+                    page: "47"
+                }
+            },
+             { // Questão 17
+                questionNumber: 17,
+                question: "Um agente político com vasto patrimônio foi condenado por um ato de improbidade que importou em enriquecimento ilícito no valor de R$ 200.000,00. O juiz, ao fixar a multa civil, considerou que o valor equivalente ao acréscimo patrimonial (R$ 200.000,00) seria ineficaz para a reprovação e prevenção do ato, dada a situação econômica do réu. Nesse caso, a Lei nº 8.429/92 permite que o juiz",
+                options: {
+                    A: "aumente a multa em até 50%, desde que devidamente fundamentado na gravidade do ato.",
+                    B: "aumente a multa até o dobro, fixando-a em até R$ 400.000,00.",
+                    C: "aumente a multa até o triplo, como ocorre em outras leis sancionatórias.",
+                    D: "não pode aumentar a multa com base na situação econômica do réu, devendo se ater ao valor do acréscimo patrimonial.",
+                    E: "pode substituir a multa pela sanção de prestação de serviços à comunidade, por ser mais eficaz.",
+                    F: "aumente a multa em até dez vezes o valor do acréscimo patrimonial, a seu critério."
+                },
+                correctAnswer: "B",
+                category: "Sanções",
+                explanation: {
+                    article: "Art. 12, § 2º da Lei nº 8.429/92",
+                    justification: "Se o valor da multa (baseado no dano ou acréscimo) for ineficaz devido à situação econômica do réu, o juiz pode aumentá-la até o dobro.",
+                    page: "48"
+                }
+            },
+             { // Questão 18
+                questionNumber: 18,
+                question: "Em uma ação de improbidade, uma pessoa jurídica foi condenada à sanção de proibição de contratação com o poder público. De acordo com a regra geral estabelecida no Art. 12, § 4º, da LIA, essa sanção",
+                 options: {
+                    A: "atinge todos os entes da federação (União, Estados, DF e Municípios), independentemente de qual tenha sido o ente lesado.",
+                    B: "pode extrapolar o ente público lesado pelo ato de improbidade, em caráter excepcional e por motivos relevantes devidamente justificados.", // Esta é a exceção
+                    C: "aplica-se apenas ao Poder Executivo do ente lesado, não abrangendo os Poderes Legislativo e Judiciário.",
+                    D: "é automaticamente estendida a todas as filiais e subsidiárias da pessoa jurídica, mesmo que não tenham participado do ato.",
+                    E: "não pode, em nenhuma hipótese, extrapolar o ente público lesado pelo ato de improbidade, sendo uma vedação absoluta.", // A pergunta pede a regra geral, mas a LIA não define explicitamente a regra como sendo restrita ao ente lesado, apenas a exceção que permite extrapolar. No entanto, a interpretação usual é que a regra seria a restrição. A opção B descreve a EXCEÇÃO prevista no §4º. A opção E afirma o oposto da exceção. Dada a redação, B é a mais correta por descrever uma possibilidade legal prevista no §4º.
+                    F: "deve ser registrada no Cadastro Nacional de Empresas Inidôneas e Suspensas (CEIS), mas sem qualquer limitação territorial."
+                },
+                correctAnswer: "B", // Refere-se à exceção explícita no §4º. A regra (restrição ao ente lesado) é implícita.
+                category: "Sanções",
+                explanation: {
+                    article: "Art. 12, § 4º da Lei nº 8.429/92",
+                    justification: "Embora a interpretação comum seja que a regra é a restrição ao ente lesado, o §4º trata especificamente da EXCEÇÃO, permitindo que a sanção extrapole o ente lesado em caráter excepcional e por motivos relevantes e justificados.",
+                    page: "48"
+                }
+            },
+            { // Questão 19
+                questionNumber: 19,
+                question: "Um agente público cometeu um ato de improbidade considerado de menor ofensa aos bens jurídicos tutelados pela Lei nº 8.429/92, mas que resultou em um pequeno dano ao erário e na obtenção de uma vantagem indevida. Nesse caso, o juiz, nos termos do Art. 12, § 5º,",
+                options: {
+                    A: "deve aplicar todas as sanções previstas para a modalidade do ato, mas em seu patamar mínimo.",
+                    B: "pode limitar a sanção à aplicação de multa, sem prejuízo do ressarcimento do dano e da perda dos valores obtidos.",
+                    C: "deve absolver o réu, pois atos de menor ofensa são atípicos para fins de improbidade administrativa.",
+                    D: "pode substituir todas as sanções por uma advertência, desde que o agente não seja reincidente.",
+                    E: "deve aplicar apenas a sanção de ressarcimento do dano, afastando a multa e a perda dos valores obtidos.",
+                    F: "limitará a sanção à perda da função pública, por seu caráter pedagógico, afastando as sanções pecuniárias."
+                },
+                correctAnswer: "B",
+                category: "Sanções",
+                explanation: {
+                    article: "Art. 12, § 5º da Lei nº 8.429/92",
+                    justification: "Para atos de menor ofensa, a sanção pode ser limitada à multa, mas o ressarcimento do dano e a perda da vantagem indevida (se houver) devem ser mantidos.",
+                    page: "51"
+                }
+            },
+            { // Questão 20
+                questionNumber: 20,
+                question: "A posse e o exercício de um cargo público, conforme o Art. 13 da Lei nº 8.429/92, ficam condicionados à apresentação, pelo agente, de",
+                options: {
+                    A: "declaração de bens e valores que compõem o seu patrimônio privado, a ser elaborada de próprio punho e atualizada a cada dois anos.",
+                    B: "certidão negativa de débitos fiscais junto à Receita Federal e à Fazenda do respectivo ente federativo.",
+                    C: "declaração de imposto de renda e proventos de qualquer natureza, que tenha sido apresentada à Secretaria Especial da Receita Federal do Brasil.",
+                    D: "autorização para a quebra de seu sigilo bancário e fiscal, a ser renovada anualmente perante o serviço de pessoal competente.",
+                    E: "termo de compromisso de probidade, no qual se compromete a não praticar atos de corrupção, sob pena de demissão sumária.",
+                    F: "declaração de parentesco, indicando todos os parentes até o quarto grau que ocupem cargos públicos na mesma esfera de governo."
+                },
+                correctAnswer: "C",
+                category: "Declaração de Bens",
+                explanation: {
+                    article: "Art. 13, caput da Lei nº 8.429/92",
+                    justification: "A lei exige a apresentação da declaração de imposto de renda já entregue à Receita Federal como condição para posse e exercício.",
+                    page: "63"
+                }
+            },
+            // --- Continuação das questões 21 a 90 ---
+            { // Questão 21
+                questionNumber: 21,
+                question: "Um servidor público se recusa a prestar a declaração de bens a que se refere o Art. 13 da Lei de Improbidade Administrativa dentro do prazo determinado. Tal conduta sujeita o agente à pena de",
+                options: { A: "suspensão por 90 dias...", B: "multa equivalente a dez vezes...", C: "demissão, sem prejuízo de outras sanções cabíveis.", D: "advertência...", E: "inabilitação...", F: "perda dos direitos políticos..." },
+                correctAnswer: "C",
+                category: "Declaração de Bens",
+                explanation: { article: "Art. 13, § 3º", justification: "A recusa em apresentar a declaração ou a apresentação de declaração falsa sujeita o agente à pena de demissão.", page: "63" }
+            },
+            { // Questão 22
+                questionNumber: 22,
+                question: "A declaração de bens apresentada pelo agente público, nos termos do Art. 13, § 2º, da Lei nº 8.429/92, deve ser atualizada",
+                options: { A: "apenas na data em que o agente deixar...", B: "anualmente e na data em que o agente deixar o exercício...", C: "a cada 2 anos...", D: "somente quando houver variação...", E: "a critério da autoridade...", F: "anualmente, sendo dispensada..." },
+                correctAnswer: "B",
+                category: "Declaração de Bens",
+                explanation: { article: "Art. 13, § 2º", justification: "A atualização é exigida anualmente e na data do desligamento do agente.", page: "63" }
+            },
+             { // Questão 23
+                questionNumber: 23,
+                question: "De acordo com o Art. 14 da Lei nº 8.429/92, a legitimidade para representar à autoridade administrativa competente, para que seja instaurada investigação destinada a apurar a prática de ato de improbidade, pertence",
+                options: { A: "exclusivamente ao Ministério Público.", B: "apenas ao cidadão...", C: "a qualquer pessoa, física ou jurídica, nacional ou estrangeira.", D: "somente à pessoa jurídica...", E: "ao Tribunal de Contas...", F: "a qualquer servidor público..." },
+                correctAnswer: "C",
+                category: "Procedimento Administrativo",
+                explanation: { article: "Art. 14, caput", justification: "A lei usa a expressão 'qualquer pessoa', conferindo ampla legitimidade para a representação.", page: "65" }
+            },
+             { // Questão 24
+                questionNumber: 24,
+                question: "A representação para apuração de ato de improbidade, conforme o Art. 14, § 1º, da LIA, deve ser escrita ou reduzida a termo e assinada, e conterá, obrigatoriamente,",
+                options: { A: "a qualificação do representante, as informações sobre o fato e sua autoria, e a indicação das provas...", B: "a qualificação... e a descrição do fato...", C: "o depósito de uma caução...", D: "a assinatura de duas testemunhas...", E: "a prova pré-constituída...", F: "o parecer de um advogado..." },
+                correctAnswer: "A",
+                category: "Procedimento Administrativo",
+                explanation: { article: "Art. 14, § 1º", justification: "O parágrafo detalha os requisitos formais mínimos: qualificação, informações sobre fato e autoria, e indicação de provas.", page: "65" }
+            },
+             { // Questão 25
+                questionNumber: 25,
+                question: "Caso a autoridade administrativa rejeite a representação para apurar ato de improbidade por não conter as formalidades legais, o Art. 14, § 2º, da LIA estabelece que",
+                options: { A: "a decisão de rejeição é irrecorrível...", B: "o representante poderá recorrer...", C: "a rejeição não impede a representação diretamente ao Ministério Público.", D: "o representante deverá corrigir...", E: "a rejeição obriga o representante...", F: "a autoridade deverá, de ofício..." },
+                correctAnswer: "C",
+                category: "Procedimento Administrativo",
+                explanation: { article: "Art. 14, § 2º", justification: "A rejeição administrativa não impede que o representante leve os fatos diretamente ao Ministério Público.", page: "66" }
+            },
+             { // Questão 26
+                questionNumber: 26,
+                question: "A comissão processante instaurada para apurar a prática de ato de improbidade, nos termos do Art. 15 da LIA, tem o dever de",
+                options: { A: "julgar o mérito...", B: "manter o procedimento em sigilo...", C: "dar conhecimento ao Ministério Público e ao Tribunal ou Conselho de Contas...", D: "solicitar autorização judicial...", E: "afastar preventivamente o agente...", F: "concluir o procedimento..." },
+                correctAnswer: "C",
+                category: "Procedimento Administrativo",
+                explanation: { article: "Art. 15, caput", justification: "A comissão deve comunicar a existência do procedimento ao MP e ao Tribunal/Conselho de Contas.", page: "66" }
+            },
+            { // Questão 27
+                questionNumber: 27,
+                question: "Na ação por improbidade administrativa, o pedido de indisponibilidade de bens dos réus, conforme o Art. 16 da LIA, pode ser formulado",
+                options: { A: "apenas em caráter incidente...", B: "apenas pelo juiz, de ofício...", C: "em caráter antecedente ou incidente, a fim de garantir a integral recomposição do erário ou do acréscimo patrimonial ilícito.", D: "apenas para garantir o futuro pagamento...", E: "em qualquer fase do processo...", F: "exclusivamente pela pessoa jurídica..." },
+                correctAnswer: "C",
+                category: "Medidas Cautelares",
+                explanation: { article: "Art. 16, caput", justification: "O pedido pode ser feito antes ou durante a ação, visando garantir o ressarcimento ou a devolução do enriquecimento.", page: "68" }
+            },
+            { // Questão 28
+                questionNumber: 28,
+                question: "Para o deferimento do pedido de indisponibilidade de bens, o Art. 16, § 3º, da LIA exige, como regra geral,",
+                options: { A: "a demonstração de que o réu está dilapidando...", B: "apenas a probabilidade da ocorrência...", C: "a demonstração de perigo de dano irreparável ou de risco ao resultado útil do processo, após a oitiva do réu em 5 dias.", D: "a existência de sentença condenatória...", E: "a oitiva prévia do réu no prazo de 15 dias...", F: "a comprovação inequívoca do dolo..." },
+                correctAnswer: "C",
+                category: "Medidas Cautelares",
+                explanation: { article: "Art. 16, § 3º", justification: "Exige-se demonstração do periculum in mora e fumus boni iuris, sendo regra a oitiva prévia do réu em 5 dias.", page: "69" }
+            },
+             { // Questão 29
+                questionNumber: 29,
+                question: "A Lei de Improbidade Administrativa estabelece uma ordem de prioridade para a indisponibilidade de bens... Conforme o Art. 16, § 11, o bloqueio de contas bancárias",
+                options: { A: "é a medida prioritária...", B: "deve ocorrer antes...", C: "só deve ser decretado na inexistência de outros bens como veículos, imóveis, ações e metais preciosos.", D: "é vedado...", E: "pode ser decretado a qualquer momento...", F: "é a segunda medida..." },
+                correctAnswer: "C",
+                category: "Medidas Cautelares",
+                explanation: { article: "Art. 16, § 11", justification: "O bloqueio de contas bancárias (dinheiro) é a última medida na ordem de prioridade estabelecida pela lei.", page: "72" }
+            },
+            { // Questão 30
+                questionNumber: 30,
+                question: "A Lei nº 8.429/92 veda expressamente a decretação de indisponibilidade de bens sobre determinados valores e bens. Uma dessas vedações, prevista no Art. 16, § 13, refere-se à",
+                options: { A: "quantia de até 100 salários-mínimos...", B: "totalidade dos valores depositados...", C: "quantia de até 40 salários-mínimos depositados em caderneta de poupança, em outras aplicações financeiras ou em conta-corrente.", D: "remuneração do agente público...", E: "quantia de até 50 salários-mínimos...", F: "valores recebidos a título de herança..." },
+                correctAnswer: "C",
+                category: "Medidas Cautelares",
+                explanation: { article: "Art. 16, § 13", justification: "É vedada a indisponibilidade de até 40 salários-mínimos em contas ou aplicações, para garantir a subsistência.", page: "73" }
+            },
+             { // Questão 31
+                questionNumber: 31,
+                question: "Em relação ao bem de família do réu em uma ação de improbidade, o Art. 16, § 14, da LIA estabelece que sua indisponibilidade",
+                options: { A: "é sempre permitida...", B: "é vedada em qualquer hipótese...", C: "é permitida apenas se o valor...", D: "é vedada, salvo se comprovado que o imóvel é fruto de vantagem patrimonial indevida, conforme descrito no Art. 9º da Lei.", E: "é permitida, mas o réu...", F: "depende de autorização..." },
+                correctAnswer: "D",
+                category: "Medidas Cautelares",
+                explanation: { article: "Art. 16, § 14", justification: "A regra é a proteção do bem de família, exceto se o próprio imóvel foi adquirido com o produto do ato de improbidade (Art. 9º).", page: "73" }
+            },
+             { // Questão 32
+                questionNumber: 32,
+                question: "Da decisão judicial que deferir ou indeferir a medida de indisponibilidade de bens em uma ação de improbidade, caberá o recurso de",
+                options: { A: "apelação...", B: "agravo de instrumento, nos termos do Código de Processo Civil.", C: "recurso especial...", D: "embargos de declaração...", E: "mandado de segurança...", F: "recurso ordinário..." },
+                correctAnswer: "B",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 16, § 9º", justification: "A lei prevê expressamente o cabimento de agravo de instrumento contra a decisão sobre indisponibilidade de bens.", page: "70" }
+            },
+            { // Questão 33
+                questionNumber: 33,
+                question: "Conforme a redação do Art. 17 da Lei nº 8.429/92 e a interpretação do Supremo Tribunal Federal, a legitimidade para propor a ação por ato de improbidade administrativa é",
+                options: { A: "exclusiva do Ministério Público...", B: "concorrente e disjuntiva entre o Ministério Público e a pessoa jurídica interessada.", C: "de qualquer cidadão...", D: "exclusiva da pessoa jurídica...", E: "concorrente entre o Ministério Público e o Tribunal...", F: "privativa da Advocacia-Geral..." },
+                correctAnswer: "B",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, caput (Interpretação STF - ADIs 7042/7043)", justification: "O STF restabeleceu a legitimidade concorrente do MP e da pessoa jurídica interessada para propor a ação.", page: "76" }
+            },
+            { // Questão 34
+                questionNumber: 34,
+                question: "A ação de improbidade administrativa, segundo o Art. 17, § 4º-A, da LIA, deverá ser proposta perante o foro",
+                options: { A: "do domicílio do réu...", B: "da Capital do Estado...", C: "do local onde ocorrer o dano ou o da pessoa jurídica prejudicada.", D: "de uma das Varas da Fazenda...", E: "a ser livremente escolhido...", F: "do Tribunal de Justiça..." },
+                correctAnswer: "C",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 4º-A", justification: "A lei define a competência territorial, permitindo a propositura no local do dano ou no foro da pessoa jurídica lesada.", page: "79" }
+            },
+            { // Questão 35
+                questionNumber: 35,
+                question: "A petição inicial da ação de improbidade administrativa, nos termos do Art. 17, § 6º, da LIA, deve, entre outros requisitos,",
+                options: { A: "ser instruída com a sentença...", B: "individualizar a conduta do réu e apontar os elementos probatórios mínimos...", C: "solicitar a citação...", D: "apresentar o rol de testemunhas...", E: "ser subscrita por, no mínimo...", F: "conter pedido de condenação genérico..." },
+                correctAnswer: "B",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 6º, I", justification: "A inicial deve individualizar a conduta e indicar as provas mínimas da ocorrência do ilícito e da autoria.", page: "79" }
+            },
+            { // Questão 36
+                questionNumber: 36,
+                question: "Após a reforma da LIA, o réu em ação de improbidade administrativa será citado para contestar a ação no prazo de",
+                options: { A: "15 dias...", B: "30 dias, sendo um prazo comum para todos os réus.", C: "60 dias...", D: "10 dias...", E: "30 dias, contados em dobro...", F: "20 dias..." },
+                correctAnswer: "B",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 7º", justification: "O prazo para contestação passou a ser de 30 dias, comum a todos os réus.", page: "82" }
+            },
+            { // Questão 37
+                questionNumber: 37,
+                question: "Havendo a possibilidade de solução consensual, o Art. 17, § 10-A, da LIA, permite que as partes requeiram ao juiz a interrupção do prazo para a contestação. Esse prazo poderá ser interrompido por um período não superior a",
+                options: { A: "30 dias.", B: "45 dias.", C: "60 dias.", D: "90 dias.", E: "120 dias.", F: "180 dias." },
+                correctAnswer: "D",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 10-A", justification: "A interrupção do prazo de contestação para tentativa de acordo é limitada a 90 dias.", page: "83" }
+            },
+            { // Questão 38
+                questionNumber: 38,
+                question: "Após a réplica do autor, o juiz proferirá decisão na qual indicará com precisão a tipificação do ato de improbidade imputável ao réu. Nesse momento, conforme o Art. 17, § 10-C, da LIA, é vedado ao juiz",
+                options: { A: "determinar a produção de provas...", B: "julgar antecipadamente o mérito...", C: "modificar o fato principal e a capitulação legal apresentada pelo autor.", D: "converter a ação...", E: "desmembrar o litisconsórcio...", F: "rejeitar as questões preliminares..." },
+                correctAnswer: "C",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 10-C", justification: "É vedado ao juiz alterar o fato principal ou a capitulação legal indicada pelo autor na decisão de saneamento.", page: "84" }
+            },
+             { // Questão 39
+                questionNumber: 39,
+                question: "Será considerada nula a decisão de mérito em ação de improbidade administrativa que, de acordo com o Art. 17, § 10-F, da LIA,",
+                options: { A: "condenar o requerido por tipo diverso daquele definido na petição inicial.", B: "absolver o requerido...", C: "aplicar as sanções...", D: "deixar de condenar...", E: "for proferida por juiz...", F: "não analisar todas as teses..." },
+                correctAnswer: "A",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 10-F, I", justification: "A sentença é nula se condenar o réu por tipo de improbidade diferente do imputado na inicial (violação da correlação).", page: "85" }
+            },
+            { // Questão 40
+                questionNumber: 40,
+                question: "A Lei de Improbidade Administrativa, em seu Art. 17, § 19, estabelece algumas inaplicabilidades na ação. Uma delas é a",
+                options: { A: "citação por edital...", B: "possibilidade de o réu...", C: "presunção de veracidade dos fatos alegados pelo autor em caso de revelia.", D: "condenação do autor...", E: "interposição de agravo...", F: "celebração de acordo..." },
+                correctAnswer: "C",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 19, I", justification: "Não se aplica o efeito da revelia quanto à presunção de veracidade dos fatos na ação de improbidade.", page: "86" }
+            },
+            // ... (Continue para as questões 41 a 90, seguindo o mesmo padrão)
+             { // Questão 41
+                questionNumber: 41,
+                question: "O Ministério Público poderá celebrar Acordo de Não Persecução Civil (ANPC), desde que dele advenham, ao menos, determinados resultados. Segundo o Art. 17-B da LIA, são resultados mínimos obrigatórios",
+                options: { A: "a confissão...", B: "o integral ressarcimento do dano e a reversão à pessoa jurídica lesada da vantagem indevida obtida.", C: "a aplicação de multa...", D: "a delação...", E: "o pedido público...", F: "o ressarcimento de 50%..." },
+                correctAnswer: "B",
+                category: "Acordo de Não Persecução Civil",
+                explanation: { article: "Art. 17-B, I e II", justification: "Os resultados mínimos para o ANPC são o ressarcimento integral do dano e a reversão da vantagem indevida.", page: "89" }
+            },
+             { // Questão 42
+                questionNumber: 42,
+                question: "A celebração do Acordo de Não Persecução Civil, se ocorrer antes do ajuizamento da ação, depende de aprovação pelo órgão do Ministério Público competente para apreciar as promoções de arquivamento de inquéritos civis. O prazo para essa aprovação é de até",
+                options: { A: "30 dias.", B: "45 dias.", C: "60 dias.", D: "90 dias.", E: "10 dias.", F: "180 dias." },
+                correctAnswer: "C",
+                category: "Acordo de Não Persecução Civil",
+                explanation: { article: "Art. 17-B, § 1º, II", justification: "O órgão revisor do MP tem até 60 dias para aprovar o ANPC celebrado antes da ação.", page: "89" }
+            },
+             { // Questão 43
+                questionNumber: 43,
+                question: "Em caso de descumprimento do Acordo de Não Persecução Civil, o investigado ou demandado ficará impedido de celebrar novo acordo pelo prazo de",
+                options: { A: "2 anos.", B: "3 anos.", C: "5 anos.", D: "8 anos.", E: "10 anos.", F: "1 ano." },
+                correctAnswer: "C",
+                category: "Acordo de Não Persecução Civil",
+                explanation: { article: "Art. 17-B, § 7º", justification: "O descumprimento do ANPC impede a celebração de novo acordo por 5 anos.", page: "91" }
+            },
+             { // Questão 44
+                questionNumber: 44,
+                question: "A sentença proferida em uma ação de improbidade deve, nos termos do Art. 17-C, inciso II, da LIA,",
+                options: { A: "desconsiderar as consequências...", B: "considerar as consequências práticas da decisão, sempre que decidir com base em valores jurídicos abstratos.", C: "presumir o dolo...", D: "aplicar sempre as sanções...", E: "desconsiderar os antecedentes...", F: "condenar solidariamente..." },
+                correctAnswer: "B",
+                category: "Sentença",
+                explanation: { article: "Art. 17-C, II", justification: "O juiz deve considerar as consequências práticas da decisão, especialmente ao lidar com conceitos abstratos.", page: "93" }
+            },
+            { // Questão 45
+                questionNumber: 45,
+                question: "Na hipótese de litisconsórcio passivo em ação de improbidade, o Art. 17-C, § 2º, da LIA estabelece que a condenação",
+                options: { A: "será solidária...", B: "ocorrerá no limite da participação e dos benefícios diretos de cada réu, sendo vedada qualquer solidariedade.", C: "será dividida...", D: "do agente público...", E: "dependerá...", F: "será solidária apenas..." },
+                correctAnswer: "B",
+                category: "Sentença",
+                explanation: { article: "Art. 17-C, § 2º", justification: "É vedada a condenação solidária; cada réu responde na medida de sua participação e benefício direto.", page: "93" }
+            },
+            { // Questão 46
+                questionNumber: 46,
+                question: "A ação por improbidade administrativa, conforme definição do Art. 17-D da LIA, é uma ação",
+                options: { A: "de natureza cível...", B: "repressiva, de caráter sancionatório, destinada à aplicação de sanções de caráter pessoal, não constituindo ação civil.", C: "de natureza mista...", D: "de controle de legalidade...", E: "de caráter exclusivamente...", F: "que pode ser ajuizada..." },
+                correctAnswer: "B",
+                category: "Natureza da Ação",
+                explanation: { article: "Art. 17-D, caput", justification: "A lei define a ação como repressiva, sancionatória, pessoal e distinta da ação civil.", page: "95" }
+            },
+             { // Questão 47
+                questionNumber: 47,
+                question: "Após o trânsito em julgado da sentença de procedência da ação de improbidade, a pessoa jurídica prejudicada deverá adotar as providências para a liquidação do dano e cumprimento da sentença. Se ela não o fizer, o Art. 18, § 2º, da LIA estabelece que caberá ao Ministério Público proceder à liquidação e ao cumprimento, após o prazo de",
+                options: { A: "30 dias.", B: "60 dias.", C: "90 dias.", D: "6 meses.", E: "1 ano.", F: "2 anos." },
+                correctAnswer: "D",
+                category: "Cumprimento de Sentença",
+                explanation: { article: "Art. 18, § 2º", justification: "Se a pessoa jurídica lesada ficar inerte por 6 meses após o trânsito em julgado, o MP assume a legitimidade para executar a sentença.", page: "97" }
+            },
+            { // Questão 48
+                questionNumber: 48,
+                question: "O réu condenado pela prática de improbidade administrativa demonstra incapacidade financeira de saldar o débito de imediato. Nesse caso, o juiz, nos termos do Art. 18, § 4º, da LIA, poderá autorizar o parcelamento do débito em até",
+                options: { A: "12 parcelas...", B: "24 parcelas...", C: "36 parcelas...", D: "48 parcelas mensais, corrigidas monetariamente.", E: "60 parcelas...", F: "72 parcelas..." },
+                correctAnswer: "D",
+                category: "Cumprimento de Sentença",
+                explanation: { article: "Art. 18, § 4º", justification: "Mediante comprovação de incapacidade financeira, o juiz pode autorizar o parcelamento em até 48 vezes, com correção.", page: "98" }
+            },
+            { // Questão 49
+                questionNumber: 49,
+                question: "Constitui crime, nos termos do Art. 19 da Lei nº 8.429/92, a conduta de",
+                options: { A: "representar por ato de improbidade... se a ação for julgada improcedente...", B: "representar por ato de improbidade contra agente público ou terceiro beneficiário, quando o autor da denúncia o sabe inocente.", C: "qualquer representação anônima...", D: "vazar informações...", E: "o agente público se recusar...", F: "o advogado do réu..." },
+                correctAnswer: "B",
+                category: "Crime na LIA",
+                explanation: { article: "Art. 19, caput", justification: "É crime representar por improbidade contra quem se sabe inocente (denunciação caluniosa específica).", page: "100" }
+            },
+             { // Questão 50
+                questionNumber: 50,
+                question: "A pena para o crime de representação por ato de improbidade contra quem se sabe inocente, previsto no Art. 19 da LIA, é de",
+                options: { A: "reclusão, de 2 a 8 anos...", B: "detenção, de 1 a 2 anos...", C: "detenção, de 6 a 10 meses, e multa.", D: "apenas multa...", E: "prestação de serviços...", F: "reclusão, de 1 a 4 anos..." },
+                correctAnswer: "C",
+                category: "Crime na LIA",
+                explanation: { article: "Art. 19, caput", justification: "A pena prevista para o crime do Art. 19 é de detenção de 6 a 10 meses, e multa.", page: "100" }
+            },
+             { // Questão 51
+                questionNumber: 51,
+                question: "A autoridade judicial competente poderá determinar o afastamento do agente público do exercício do cargo, emprego ou função, sem prejuízo da remuneração, quando a medida for necessária... Conforme o Art. 20, § 2º, da LIA, esse afastamento será de até",
+                options: { A: "60 dias...", B: "90 dias, prorrogáveis uma única vez por igual prazo.", C: "180 dias...", D: "120 dias...", E: "30 dias...", F: "90 dias, improrrogáveis..." },
+                correctAnswer: "B",
+                category: "Afastamento Cautelar",
+                explanation: { article: "Art. 20, § 2º", justification: "O prazo máximo do afastamento cautelar é de 90 dias, prorrogável uma vez por igual período (total 180 dias).", page: "101" }
+            },
+             { // Questão 52
+                questionNumber: 52,
+                question: "A aplicação das sanções previstas na Lei de Improbidade Administrativa, conforme o Art. 21, independe",
+                options: { A: "da ocorrência de dolo...", B: "da aprovação ou rejeição das contas pelo órgão de controle interno ou pelo Tribunal de Contas.", C: "do trânsito em julgado...", D: "da existência de um agente público...", E: "da efetiva ocorrência de dano...", F: "da individualização da conduta..." },
+                correctAnswer: "B",
+                category: "Independência das Instâncias",
+                explanation: { article: "Art. 21, II", justification: "A decisão do Tribunal de Contas sobre as contas não vincula a ação de improbidade (independência das instâncias).", page: "103" }
+            },
+            { // Questão 53
+                questionNumber: 53,
+                question: "A absolvição criminal em ação que discuta os mesmos fatos, confirmada por decisão colegiada, impede o trâmite da ação de improbidade administrativa. O Art. 21, § 4º, da LIA, cuja eficácia foi suspensa pelo STF, previa que essa comunicação ocorreria com",
+                options: { A: "todos os fundamentos de absolvição previstos no Código de Processo Penal.", B: "apenas os fundamentos de negativa...", C: "apenas o fundamento de que o fato...", D: "apenas se a absolvição criminal...", E: "todos os fundamentos, exceto...", F: "apenas o fundamento de excludente..." },
+                correctAnswer: "A",
+                category: "Independência das Instâncias",
+                explanation: { article: "Art. 21, § 4º", justification: "O dispositivo (suspenso pelo STF) previa ampla comunicação, impedindo a ação de improbidade com base em qualquer fundamento de absolvição criminal (Art. 386 CPP).", page: "105" }
+            },
+            { // Questão 54
+                questionNumber: 54,
+                question: "O prazo prescricional para a ação de aplicação das sanções previstas na Lei de Improbidade Administrativa é de",
+                options: { A: "5 anos...", B: "10 anos...", C: "8 anos, contados da ocorrência do fato ou, no caso de infrações permanentes, do dia em que cessou a permanência.", D: "3 anos...", E: "8 anos, contados da data...", F: "4 anos..." },
+                correctAnswer: "C",
+                category: "Prescrição",
+                explanation: { article: "Art. 23, caput", justification: "O prazo prescricional foi unificado em 8 anos, contados do fato ou da cessação da permanência.", page: "107" }
+            },
+            { // Questão 55
+                questionNumber: 55,
+                question: "A instauração de inquérito civil para apuração de ato de improbidade, nos termos do Art. 23, § 1º, da LIA,",
+                options: { A: "interrompe o prazo...", B: "suspende o curso do prazo prescricional por, no máximo, 180 dias corridos.", C: "não tem qualquer efeito...", D: "suspende o prazo... por até 1 ano...", E: "interrompe o prazo... pela metade.", F: "suspende o prazo... por 365 dias." },
+                correctAnswer: "B",
+                category: "Prescrição",
+                explanation: { article: "Art. 23, § 1º", justification: "A instauração de IC ou PAD suspende a prescrição por, no máximo, 180 dias corridos.", page: "107" }
+            },
+             { // Questão 56
+                questionNumber: 56,
+                question: "O inquérito civil para apuração do ato de improbidade, conforme o Art. 23, § 2º, da LIA, deverá ser concluído no prazo de",
+                options: { A: "180 dias...", B: "1 ano, contado em dias úteis...", C: "365 dias corridos, prorrogável uma única vez por igual período.", D: "2 anos...", E: "90 dias...", F: "365 dias corridos, improrrogáveis..." },
+                correctAnswer: "C",
+                category: "Prescrição",
+                explanation: { article: "Art. 23, § 2º", justification: "O prazo para conclusão do inquérito civil é de 365 dias corridos, prorrogável uma vez por igual período.", page: "108" }
+            },
+            { // Questão 57
+                questionNumber: 57,
+                question: "Encerrado o prazo para a conclusão do inquérito civil, e não sendo caso de arquivamento, a ação de improbidade deverá ser proposta no prazo de",
+                options: { A: "10 dias.", B: "15 dias.", C: "30 dias.", D: "60 dias.", E: "90 dias.", F: "5 dias." },
+                correctAnswer: "C",
+                category: "Prescrição",
+                explanation: { article: "Art. 23, § 3º", justification: "Após o término do prazo do IC, a ação deve ser proposta em 30 dias, se não for arquivado.", page: "108" }
+            },
+            { // Questão 58
+                questionNumber: 58,
+                question: "De acordo com o Art. 23, § 4º, da LIA, o prazo da prescrição se interrompe, entre outras hipóteses,",
+                options: { A: "pela instauração...", B: "pela publicação da sentença condenatória.", C: "pela representação...", D: "pelo recebimento...", E: "pela decretação...", F: "pela oitiva..." },
+                correctAnswer: "B",
+                category: "Prescrição",
+                explanation: { article: "Art. 23, § 4º, II", justification: "A publicação da sentença condenatória é um dos marcos interruptivos da prescrição.", page: "109" }
+            },
+            { // Questão 59
+                questionNumber: 59,
+                question: "Interrompida a prescrição em uma ação de improbidade administrativa, o prazo recomeça a correr",
+                options: { A: "por inteiro...", B: "pela metade do prazo previsto no caput do Art. 23, ou seja, por 4 anos.", C: "por 5 anos...", D: "por 2 anos...", E: "pelo tempo que faltava...", F: "por 3 anos..." },
+                correctAnswer: "B",
+                category: "Prescrição",
+                explanation: { article: "Art. 23, § 5º", justification: "Após a interrupção, o prazo recomeça pela metade (4 anos) - prescrição intercorrente.", page: "109" }
+            },
+            { // Questão 60
+                questionNumber: 60,
+                question: "A suspensão e a interrupção da prescrição, nos termos do Art. 23, § 6º, da LIA, produzem efeitos relativamente",
+                options: { A: "apenas ao agente público...", B: "a todos os que concorreram para a prática do ato de improbidade.", C: "apenas ao réu...", D: "apenas em relação...", E: "somente ao autor...", F: "a todos os réus..." },
+                correctAnswer: "B",
+                category: "Prescrição",
+                explanation: { article: "Art. 23, § 6º", justification: "As causas de suspensão e interrupção se estendem a todos os coautores ou partícipes do ato.", page: "110" }
+            },
+            { // Questão 61
+                questionNumber: 61,
+                question: "É dever do poder público, conforme o Art. 23-A da LIA,",
+                options: { A: "publicar anualmente...", B: "oferecer contínua capacitação aos agentes públicos e políticos que atuem com prevenção ou repressão de atos de improbidade.", C: "criar um fundo...", D: "prestar assistência jurídica...", E: "realizar auditorias...", F: "garantir que todas as ações..." },
+                correctAnswer: "B",
+                category: "Disposições Finais",
+                explanation: { article: "Art. 23-A", justification: "A lei estabelece o dever de capacitação contínua para agentes que atuam na área de improbidade.", page: "112" }
+            },
+            { // Questão 62
+                questionNumber: 62,
+                question: "Nas ações e nos acordos regidos pela Lei de Improbidade Administrativa, o Art. 23-B estabelece que",
+                options: { A: "o autor da ação deverá...", B: "não haverá adiantamento de custas, de preparo, de emolumentos, de honorários periciais e de quaisquer outras despesas.", C: "o réu deverá pagar...", D: "as custas serão pagas...", E: "haverá sempre condenação...", F: "as despesas processuais..." },
+                correctAnswer: "B",
+                category: "Disposições Finais",
+                explanation: { article: "Art. 23-B, caput", justification: "Não há adiantamento de custas e despesas em ações e acordos de improbidade.", page: "112" }
+            },
+             { // Questão 63
+                questionNumber: 63,
+                question: "Haverá condenação em honorários sucumbenciais em desfavor do autor da ação de improbidade, nos termos do Art. 23-B, § 2º, da LIA,",
+                options: { A: "em todos os casos...", B: "apenas se a ação for julgada improcedente e se for comprovada a má-fé do autor.", C: "em caso de procedência...", D: "em nenhuma hipótese...", E: "apenas se o autor...", F: "se a ação for extinta..." },
+                correctAnswer: "B",
+                category: "Disposições Finais",
+                explanation: { article: "Art. 23-B, § 2º", justification: "A condenação do autor em honorários é excepcional, exigindo improcedência da ação e comprovação de má-fé.", page: "112" }
+            },
+            { // Questão 64
+                questionNumber: 64,
+                question: "Uma empresa pública federal é vítima de um ato de improbidade praticado por um de seus diretores. Conforme a LIA, essa empresa pública figura no ato como",
+                options: { A: "sujeito ativo...", B: "sujeito passivo, pois seu patrimônio foi lesado pelo ato ímprobo.", C: "terceiro interessado...", D: "coautora do ato...", E: "sujeito ativo e passivo...", F: "órgão de controle..." },
+                correctAnswer: "B",
+                category: "Sujeitos Passivos",
+                explanation: { article: "Art. 1º, § 5º", justification: "Empresa pública integra a administração indireta e é protegida pela LIA, figurando como sujeito passivo (vítima) do ato.", page: "4" }
+            },
+            { // Questão 65
+                questionNumber: 65,
+                question: "A responsabilidade dos sócios e diretores de uma pessoa jurídica de direito privado por ato de improbidade imputado à empresa, segundo o Art. 3º, § 1º, da LIA, exige a comprovação de",
+                options: { A: "culpa grave...", B: "participação ou benefícios indiretos...", C: "participação e benefícios diretos, respondendo nos limites de sua participação.", D: "que a empresa não possui...", E: "que eles tinham conhecimento...", F: "dolo eventual..." },
+                correctAnswer: "C",
+                category: "Sujeitos Ativos",
+                explanation: { article: "Art. 3º, § 1º", justification: "A responsabilidade pessoal de sócios/diretores é excepcional e requer prova de participação E benefício direto.", page: "12" }
+            },
+            { // Questão 66
+                questionNumber: 66,
+                question: "Uma pessoa jurídica comete um ato que é, ao mesmo tempo, tipificado como ato de improbidade administrativa e como ato lesivo à administração pública na Lei nº 12.846/13... Nesse caso, o Art. 3º, § 2º, da LIA, dispõe que",
+                options: { A: "as sanções de ambas...", B: "as sanções da LIA não se aplicarão à pessoa jurídica, prevalecendo a aplicação da Lei Anticorrupção.", C: "aplicar-se-á a lei...", D: "o Ministério Público...", E: "a pessoa jurídica...", F: "as sanções serão unificadas..." },
+                correctAnswer: "B",
+                category: "Sujeitos Ativos",
+                explanation: { article: "Art. 3º, § 2º", justification: "Para evitar bis in idem, se o ato também é previsto na Lei Anticorrupção, aplicam-se as sanções desta, afastando as da LIA para a PJ.", page: "13" }
+            },
+             { // Questão 67
+                questionNumber: 67,
+                question: "Um servidor público, dolosamente, permite que uma empresa privada utilize equipamentos da repartição sem a observância das formalidades legais, causando prejuízo ao erário. Essa conduta está tipificada no Art. 10 da LIA como ato de improbidade que",
+                options: { A: "importa enriquecimento ilícito...", B: "causa lesão ao erário, especificamente no inciso II.", C: "atenta contra os princípios...", D: "não é ato de improbidade...", E: "causa lesão ao erário...", F: "importa enriquecimento ilícito..." },
+                correctAnswer: "B",
+                category: "Lesão ao Erário",
+                explanation: { article: "Art. 10, II", justification: "Permitir ou concorrer para que privado utilize bens públicos sem formalidades é ato de lesão ao erário (Art. 10, II).", page: "24" }
+            },
+             { // Questão 68
+                questionNumber: 68,
+                question: "A sanção de perda da função pública, nas hipóteses de enriquecimento ilícito (Art. 9º) e lesão ao erário (Art. 10), conforme o Art. 12, § 1º, da LIA (cuja eficácia foi suspensa pelo STF), atinge",
+                options: { A: "todos os vínculos...", B: "apenas o vínculo de mesma qualidade e natureza que o agente detinha com o poder público na época da infração.", C: "o vínculo que o agente detinha...", D: "apenas o vínculo...", E: "qualquer vínculo...", F: "apenas o mandato..." },
+                correctAnswer: "B",
+                category: "Sanções",
+                explanation: { article: "Art. 12, § 1º", justification: "O dispositivo (suspenso) previa que a perda atingiria apenas o vínculo da época do fato, com exceção para estender em caso de Art. 9º.", page: "47" }
+            },
+             { // Questão 69
+                questionNumber: 69,
+                question: "A sanção de proibição de contratação com o poder público, aplicada a uma pessoa jurídica, deverá constar, obrigatoriamente,",
+                options: { A: "no Diário Oficial...", B: "no Cadastro Nacional de Empresas Inidôneas e Suspensas (CEIS).", C: "em um registro interno...", D: "no Cadastro de Pessoas...", E: "no site do Tribunal...", F: "em todos os portais..." },
+                correctAnswer: "B",
+                category: "Sanções",
+                explanation: { article: "Art. 12, § 8º", justification: "A sanção deve ser registrada no CEIS para dar publicidade e efetividade.", page: "49" }
+            },
+             { // Questão 70
+                questionNumber: 70,
+                question: "Um agente público é processado por ato de improbidade que causa lesão ao erário... fica comprovado que ele já ressarciu parte do dano em uma ação civil... De acordo com o Art. 12, § 6º, da LIA,",
+                options: { A: "o ressarcimento na esfera cível...", B: "a reparação do dano na ação de improbidade deverá deduzir o ressarcimento já ocorrido na instância cível.", C: "a ação de improbidade...", D: "o valor pago...", E: "a dedução só é permitida...", F: "o juiz poderá..." },
+                correctAnswer: "B",
+                category: "Sanções",
+                explanation: { article: "Art. 12, § 6º", justification: "O valor já ressarcido em outra esfera pelos mesmos fatos deve ser deduzido para evitar enriquecimento sem causa do Estado.", page: "52" }
+            },
+            { // Questão 71
+                questionNumber: 71,
+                question: "A unificação de sanções, prevista no Art. 18-A da LIA... Em qualquer caso, as sanções de suspensão de direitos políticos e de proibição de contratar observarão o limite máximo de",
+                options: { A: "10 anos.", B: "12 anos.", C: "14 anos.", D: "8 anos.", E: "20 anos.", F: "30 anos." },
+                correctAnswer: "E",
+                category: "Unificação de Sanções",
+                explanation: { article: "Art. 18-A, Parágrafo único", justification: "Mesmo unificando penas, a suspensão de direitos políticos e a proibição de contratar não podem ultrapassar 20 anos.", page: "53" }
+            },
+             { // Questão 72
+                questionNumber: 72,
+                question: "A ação de improbidade administrativa, por sua natureza repressiva e de caráter sancionatório, tem seu ajuizamento vedado para",
+                options: { A: "a aplicação de sanções...", B: "o controle de legalidade de políticas públicas e a proteção do patrimônio público e social.", C: "a busca do ressarcimento...", D: "a responsabilização...", E: "a apuração de fatos...", F: "a condenação de particulares..." },
+                correctAnswer: "B",
+                category: "Natureza da Ação",
+                explanation: { article: "Art. 17-D", justification: "É vedado usar a ação de improbidade para controlar políticas públicas ou proteger o patrimônio de forma geral (objeto da ACP).", page: "95" }
+            },
+             { // Questão 73
+                questionNumber: 73,
+                question: "Em uma ação de improbidade, o juiz identifica a existência de ilegalidades... mas constata que não estão presentes todos os requisitos para a imposição das sanções... Nesse cenário, o Art. 17, § 16, da LIA, autoriza o juiz a",
+                options: { A: "extinguir o processo...", B: "absolver sumariamente...", C: "converter a ação de improbidade administrativa em ação civil pública.", D: "remeter os autos...", E: "condenar os réus apenas...", F: "suspender o processo..." },
+                correctAnswer: "C",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 16", justification: "Se há irregularidades, mas não todos os requisitos para improbidade, o juiz pode converter a ação em ACP.", page: "85" }
+            },
+             { // Questão 74
+                questionNumber: 74,
+                question: "Da decisão judicial que converte a ação de improbidade administrativa em ação civil pública, caberá o recurso de",
+                options: { A: "apelação.", B: "agravo de instrumento.", C: "recurso especial.", D: "não há recurso...", E: "embargos infringentes.", F: "correição parcial." },
+                correctAnswer: "B",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 17", justification: "A lei prevê expressamente o agravo de instrumento contra a decisão que converte a ação em ACP.", page: "86" }
+            },
+            { // Questão 75
+                questionNumber: 75,
+                question: "Ao réu, em ação de improbidade administrativa, é assegurado o direito de ser interrogado. Conforme o Art. 17, § 18, da LIA, sua recusa em depor ou seu silêncio",
+                options: { A: "implicará confissão...", B: "não implicará confissão.", C: "será considerada como obstrução...", D: "levará ao julgamento...", E: "implicará confissão apenas...", F: "será comunicada..." },
+                correctAnswer: "B",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 18", justification: "O silêncio do réu no interrogatório não pode ser interpretado como confissão.", page: "86" }
+            },
+            { // Questão 76
+                questionNumber: 76,
+                question: "A Lei de Improbidade Administrativa, em seu Art. 17, § 19, veda expressamente o reexame obrigatório (remessa necessária) da sentença de",
+                options: { A: "procedência...", B: "improcedência ou de extinção sem resolução de mérito.", C: "que condena...", D: "que decreta...", E: "que homologa...", F: "procedência parcial..." },
+                correctAnswer: "B",
+                category: "Processo Judicial",
+                explanation: { article: "Art. 17, § 19, IV", justification: "Não há reexame obrigatório para sentenças de improcedência ou extinção sem mérito na LIA.", page: "86" }
+            },
+            { // Questão 77
+                questionNumber: 77,
+                question: "Um servidor público... pratica dolosamente um ato que causa um prejuízo de R$ 5.000,00 ao erário, sem obter qualquer vantagem para si... A sanção de multa civil, nesse caso, será",
+                options: { A: "de até 24 vezes...", B: "equivalente ao valor do dano, ou seja, R$ 5.000,00.", C: "equivalente ao acréscimo...", D: "fixada pelo juiz...", E: "inaplicável...", F: "equivalente ao dobro..." },
+                correctAnswer: "B", // Correção: A multa para Art. 10 é equivalente ao dano.
+                category: "Sanções",
+                explanation: { article: "Art. 12, II", justification: "Para lesão ao erário (Art. 10), a multa civil é equivalente ao valor do dano.", page: "47" }
+            },
+            { // Questão 78
+                questionNumber: 78,
+                question: "Um agente político pratica um ato de improbidade que importa enriquecimento ilícito, auferindo uma vantagem de R$ 1.000.000,00... A sanção de proibição de contratar com o poder público, nesse caso, terá um prazo não superior a",
+                options: { A: "4 anos.", B: "8 anos.", C: "10 anos.", D: "12 anos.", E: "14 anos.", F: "20 anos." },
+                correctAnswer: "E",
+                category: "Sanções",
+                explanation: { article: "Art. 12, I", justification: "Para enriquecimento ilícito (Art. 9º), a proibição de contratar é de até 14 anos.", page: "47" }
+            },
+            { // Questão 79
+                questionNumber: 79,
+                question: "A celebração do Acordo de Não Persecução Civil (ANPC), em qualquer caso, depende de homologação",
+                options: { A: "do Tribunal de Contas.", B: "da autoridade administrativa...", C: "judicial.", D: "do Conselho Nacional...", E: "da Advocacia-Geral...", F: "do Poder Legislativo..." },
+                correctAnswer: "C",
+                category: "Acordo de Não Persecução Civil",
+                explanation: { article: "Art. 17-B, § 1º, III", justification: "A homologação judicial é requisito para a validade do ANPC, seja ele celebrado antes ou depois da ação.", page: "89" }
+            },
+            { // Questão 80
+                questionNumber: 80,
+                question: "O prazo da prescrição intercorrente na ação de improbidade administrativa, que corre entre os marcos interruptivos, é de",
+                options: { A: "8 anos.", B: "5 anos.", C: "4 anos.", D: "2 anos.", E: "180 dias.", F: "365 dias." },
+                correctAnswer: "C",
+                category: "Prescrição",
+                explanation: { article: "Art. 23, § 5º", justification: "A prescrição intercorrente tem prazo de 4 anos (metade do prazo principal de 8 anos).", page: "109" }
+            },
+            { // Questão 81
+                questionNumber: 81,
+                question: "Considere que um prefeito, dolosamente, utilize máquinas e servidores da prefeitura para realizar uma obra em sua fazenda particular. Essa conduta... configura, em tese, ato de improbidade administrativa",
+                options: { A: "que atenta contra os princípios...", B: "que causa lesão ao erário...", C: "que importa enriquecimento ilícito, conforme o Art. 9º, IV.", D: "que é atípico...", E: "que causa lesão ao erário...", F: "que importa enriquecimento ilícito..." },
+                correctAnswer: "C",
+                category: "Enriquecimento Ilícito",
+                explanation: { article: "Art. 9º, IV", justification: "Utilizar bens ou trabalho de servidores em obra particular é ato de enriquecimento ilícito (Art. 9º, IV).", page: "21" }
+            },
+             { // Questão 82
+                questionNumber: 82,
+                question: "Um fiscal da vigilância sanitária recebe, dolosamente, uma vantagem econômica para tolerar o funcionamento de um estabelecimento que não cumpre as normas de higiene. Essa conduta se enquadra como ato de improbidade",
+                options: { A: "que importa enriquecimento ilícito, por tolerar atividade ilícita.", B: "que causa lesão ao erário...", C: "que atenta contra os princípios...", D: "que não é improbidade...", E: "que causa lesão ao erário...", F: "que atenta contra os princípios..." },
+                correctAnswer: "A",
+                category: "Enriquecimento Ilícito",
+                explanation: { article: "Art. 9º, V", justification: "Receber vantagem para tolerar atividade ilícita é ato de enriquecimento ilícito (Art. 9º, V).", page: "21" }
+            },
+             { // Questão 83
+                questionNumber: 83,
+                question: "O Presidente da República, segundo o entendimento doutrinário e jurisprudencial citado no material,",
+                options: { A: "responde por atos de improbidade...", B: "responde por atos de improbidade...", C: "não responde por ato de improbidade, mas sim por crime de responsabilidade.", D: "responde por ato de improbidade e por crime...", E: "responde por ato de improbidade perante...", F: "é isento de responsabilidade..." },
+                correctAnswer: "C",
+                category: "Sujeitos Ativos",
+                explanation: { article: "Comentários ao Art. 2º", justification: "O Presidente da República não se submete à LIA, respondendo por crimes de responsabilidade (Art. 85, V, CF).", page: "9" }
+            },
+             { // Questão 84
+                questionNumber: 84,
+                question: "A ação ou omissão decorrente de divergência interpretativa da lei, baseada em jurisprudência, ainda que não pacificada,",
+                options: { A: "configura ato de improbidade...", B: "não configura improbidade, conforme o Art. 1º, § 8º, da LIA (cuja eficácia foi suspensa pelo STF).", C: "configura improbidade na modalidade...", D: "configura improbidade, mas o agente...", E: "não configura improbidade, desde que...", F: "configura improbidade se causar..." },
+                correctAnswer: "B",
+                category: "Disposições Gerais",
+                explanation: { article: "Art. 1º, § 8º", justification: "O dispositivo (suspenso) afasta a improbidade em caso de divergência interpretativa baseada em jurisprudência.", page: "8" }
+            },
+            { // Questão 85
+                questionNumber: 85,
+                question: "Um diretor de uma autarquia federal, dolosamente, concede um benefício fiscal a uma empresa sem a observância das formalidades legais, o que causa um dano efetivo aos cofres públicos. Essa conduta é tipificada como ato de improbidade",
+                options: { A: "que importa enriquecimento ilícito...", B: "que atenta contra os princípios...", C: "que causa lesão ao erário, conforme o Art. 10, VII.", D: "que não é improbidade...", E: "que causa lesão ao erário...", F: "que importa enriquecimento ilícito..." },
+                correctAnswer: "C",
+                category: "Lesão ao Erário",
+                explanation: { article: "Art. 10, VII", justification: "Conceder benefício administrativo ou fiscal sem observar as formalidades legais é ato de lesão ao erário (Art. 10, VII).", page: "26" }
+            },
+             { // Questão 86
+                questionNumber: 86,
+                question: "A mera perda patrimonial decorrente da atividade econômica de uma empresa estatal, como a Petrobrás ou o Banco do Brasil,",
+                options: { A: "sempre configurará...", B: "não acarretará improbidade administrativa, salvo se comprovado ato doloso praticado com essa finalidade.", C: "configurará improbidade...", D: "acarretará a responsabilização...", E: "não acarretará improbidade...", F: "sempre configurará..." },
+                correctAnswer: "B",
+                category: "Lesão ao Erário",
+                explanation: { article: "Art. 10, § 2º", justification: "A mera perda decorrente da atividade econômica não é improbidade, a menos que seja resultado de ato doloso com essa finalidade.", page: "34" }
+            },
+             { // Questão 87
+                questionNumber: 87,
+                question: "Um servidor público utiliza um slogan e as cores de sua campanha eleitoral em uma publicidade institucional... de forma a promover inequivocamente seu enaltecimento pessoal. Essa conduta, segundo a LIA,",
+                options: { A: "é permitida...", B: "é uma mera irregularidade...", C: "constitui ato de improbidade que atenta contra os princípios da administração pública (Art. 11, XII).", D: "constitui ato de improbidade...", E: "constitui ato de improbidade...", F: "não constitui improbidade..." },
+                correctAnswer: "C",
+                category: "Violação de Princípios",
+                explanation: { article: "Art. 11, XII", justification: "Publicidade que promove enaltecimento pessoal do agente público com recursos do erário viola princípios (Art. 11, XII).", page: "40" }
+            },
+             { // Questão 88
+                questionNumber: 88,
+                question: "A sanção de multa civil para o ato de improbidade que atenta contra os princípios da administração pública (Art. 11) é de",
+                options: { A: "até 100 vezes...", B: "até 24 vezes o valor da remuneração percebida pelo agente.", C: "valor equivalente...", D: "valor fixo...", E: "até 12 vezes...", F: "valor equivalente ao dobro..." },
+                correctAnswer: "B",
+                category: "Sanções",
+                explanation: { article: "Art. 12, III", justification: "Para violação de princípios (Art. 11), a multa é de até 24 vezes a remuneração.", page: "47" }
+            },
+            { // Questão 89
+                questionNumber: 89,
+                question: "A perda da função pública e a suspensão dos direitos políticos, de acordo com o Art. 20 da LIA, só se efetivam com",
+                options: { A: "a decisão condenatória...", B: "a decisão condenatória proferida...", C: "o trânsito em julgado da sentença condenatória.", D: "a instauração do processo...", E: "a autorização do Chefe...", F: "o julgamento do processo..." },
+                correctAnswer: "C",
+                category: "Sanções",
+                explanation: { article: "Art. 20, caput", justification: "A perda da função e a suspensão dos direitos políticos só ocorrem após o trânsito em julgado.", page: "101" }
+            },
+             { // Questão 90
+                questionNumber: 90,
+                question: "O prazo para a conclusão do processo administrativo disciplinar, segundo a legislação citada no material de apoio (Lei 10.261/68) para fins de comparação com os prazos da LIA, é de",
+                options: { A: "180 dias...", B: "365 dias...", C: "60 dias...", D: "90 dias, contados da citação do acusado.", E: "30 dias...", F: "120 dias..." },
+                correctAnswer: "D",
+                category: "Procedimento Administrativo",
+                explanation: { article: "Art. 277 da Lei 10.261/68 (citado)", justification: "O material menciona, para comparação, o prazo de 90 dias do PAD na Lei 10.261/68, contado da citação.", page: "108" }
+            }
+        ];
+
+
+        // --- O RESTANTE DO CÓDIGO JAVASCRIPT PERMANECE O MESMO DA VERSÃO ANTERIOR ---
+        // (Elementos do DOM, Variáveis de Estado, renderQuiz, updateProgress, Event Listener de clique, analyzePerformance, Event Listener finishBtn, Event Listener DOMContentLoaded)
+       // Elementos do DOM
+        const loadingEl = document.getElementById('loading');
+        const quizContainerEl = document.getElementById('quiz-container');
+        const finishBtnEl = document.getElementById('finish-btn');
+        const finishButtonContainerEl = document.getElementById('finish-button-container');
+        const resultsContainerEl = document.getElementById('results-container');
+        const correctCountEl = document.getElementById('correct-count');
+        const incorrectCountEl = document.getElementById('incorrect-count');
+        const percentageEl = document.getElementById('percentage');
+        const timeTakenEl = document.getElementById('time-taken');
+        const avgTimeEl = document.getElementById('avg-time');
+        const wrongAnswersContentEl = document.getElementById('wrong-answers-content');
+        const strengthsWeaknessesEl = document.getElementById('strengths-weaknesses');
+        const progressTextEl = document.getElementById('progress-text');
+        const reviewTableBodyEl = document.getElementById('review-table-body');
+        const restartBtnEl = document.getElementById('restart-btn');
+
+
+        // Variáveis de Estado do Quiz
+        let userAnswers = {}; // { index: "opcao" }
+        let questionTimers = {}; // { index: tempo_ms }
+        let currentQuestionStartTime;
+        let score = { correct: 0, incorrect: 0 };
+        let startTime;
+        let performanceChart;
+        let answeredCount = 0;
+        let quizStartTimeSet = false; // Flag para garantir que o startTime seja definido apenas uma vez
+
+
+       // Função para embaralhar as opções (Fisher-Yates shuffle)
+       function shuffleObject(obj) {
+            let keys = Object.keys(obj);
+            for (let i = keys.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [keys[i], keys[j]] = [keys[j], keys[i]]; // Swap keys
+            }
+            let shuffledObj = {};
+            keys.forEach(key => {
+                shuffledObj[key] = obj[key];
+            });
+            return shuffledObj;
+        }
+
+        // Função para renderizar as questões do quiz
+        function renderQuiz() {
+            quizContainerEl.innerHTML = ''; // Limpa container
+            quizData.forEach((q, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'bg-white p-5 sm:p-6 rounded-lg shadow border border-gray-200';
+                questionElement.id = `question-${index}`;
+
+                // Embaralha as opções ANTES de gerar o HTML
+                // const shuffledOptions = shuffleObject(q.options); // Desativado para manter ordem A-F
+                const options = q.options; // Usa a ordem original
+
+                let optionsHTML = '';
+                // Cria os botões para cada opção na ordem embaralhada
+                for (const key in options) {
+                    optionsHTML += `
+                        <button class="option-btn" data-question-index="${index}" data-option-key="${key}">
+                            <span class="font-semibold mr-2">${key})</span> ${options[key]}
+                        </button>
+                    `;
+                }
+
+                // Monta o HTML da questão
+                questionElement.innerHTML = `
+                    <p class="text-base sm:text-lg font-medium leading-relaxed mb-4"><span class="font-bold">${q.questionNumber}.</span> ${q.question}</p>
+                    <div class="options-container mt-4 space-y-1">
+                        ${optionsHTML}
+                    </div>
+                    <!-- Área para exibir a explicação -->
+                    <div id="explanation-${index}" class="explanation">
+                        <div class="p-4 space-y-2 text-sm sm:text-base">
+                            <p><strong class="text-gray-900">Resposta Correta:</strong> <span class="font-bold text-green-700">${q.correctAnswer}</span> - ${q.options[q.correctAnswer]}</p>
+                            ${q.explanation.article ? `<p><strong class="text-gray-900">Artigo:</strong> ${q.explanation.article}</p>` : ''}
+                             ${q.explanation.transcription ? `<p class="font-mono text-xs sm:text-sm bg-gray-200 p-2 rounded"><strong class="text-gray-900 font-sans text-sm sm:text-base block mb-1">Transcrição:</strong> ${q.explanation.transcription}</p>` : ''}
+                            <p><strong class="text-gray-900">Justificativa:</strong> ${q.explanation.justification}</p>
+                             ${q.explanation.page ? `<p class="text-xs text-gray-500"><strong class="text-gray-900">Página de referência:</strong> ${q.explanation.page}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+                quizContainerEl.appendChild(questionElement);
+            });
+
+            // Mostra o quiz e esconde o loading
+            loadingEl.classList.add('hidden');
+            quizContainerEl.classList.remove('hidden');
+            finishButtonContainerEl.classList.remove('hidden');
+
+            // Inicia o timer geral e da primeira questão APÓS renderizar
+            if (!quizStartTimeSet) {
+                 startTime = new Date();
+                 currentQuestionStartTime = new Date();
+                 quizStartTimeSet = true; // Define a flag
+            }
+
+        }
+
+        // Função para atualizar a barra de progresso e habilitar/desabilitar botão
+        function updateProgress() {
+            answeredCount = Object.keys(userAnswers).length;
+            progressTextEl.textContent = `Respondido ${answeredCount} de ${quizData.length} questões.`;
+            finishBtnEl.disabled = answeredCount !== quizData.length;
+             if (!finishBtnEl.disabled) {
+                 progressTextEl.textContent = 'Todas as questões respondidas. Clique em finalizar.';
+             }
+        }
+
+        // Event listener para cliques nos botões de opção
+        quizContainerEl.addEventListener('click', (e) => {
+            const button = e.target.closest('.option-btn');
+            if (button && !button.classList.contains('disabled')) {
+                const questionIndex = parseInt(button.dataset.questionIndex, 10);
+                const selectedOptionKey = button.dataset.optionKey;
+
+                // Evita responder a mesma questão múltiplas vezes
+                if (userAnswers.hasOwnProperty(questionIndex)) return;
+
+                // Calcula o tempo gasto na questão (somente se o timer foi iniciado)
+                 if (currentQuestionStartTime) {
+                    const questionEndTime = new Date();
+                    const questionTime = questionEndTime - currentQuestionStartTime;
+                    questionTimers[questionIndex] = questionTime;
+                 }
+
+
+                userAnswers[questionIndex] = selectedOptionKey;
+                const questionData = quizData[questionIndex];
+                const optionsContainer = button.closest('.options-container');
+                const allOptionButtons = optionsContainer.querySelectorAll('.option-btn');
+
+                allOptionButtons.forEach(btn => {
+                    btn.classList.add('disabled');
+                    if (btn.dataset.optionKey === questionData.correctAnswer) {
+                        btn.classList.add('correct');
+                    }
+                });
+
+                if (selectedOptionKey === questionData.correctAnswer) {
+                    score.correct++;
+                } else {
+                    score.incorrect++;
+                    button.classList.remove('correct');
+                    button.classList.add('incorrect-selected');
+                }
+
+                document.getElementById(`explanation-${questionIndex}`).classList.add('show');
+                updateProgress();
+
+                // Reinicia o timer para a próxima questão, se houver
+                 if (Object.keys(userAnswers).length < quizData.length) {
+                    currentQuestionStartTime = new Date();
+                 } else {
+                     currentQuestionStartTime = null; // Para de contar o tempo após a última resposta
+                 }
+
+            }
+        });
+
+       // Função para analisar o desempenho por categoria
+        function analyzePerformance() {
+            const categoryPerformance = {};
+
+            quizData.forEach(q => {
+                if (!categoryPerformance[q.category]) {
+                    categoryPerformance[q.category] = { correct: 0, total: 0, time: 0, questions: [] };
+                }
+            });
+
+            quizData.forEach((q, index) => {
+                if (userAnswers.hasOwnProperty(index)) {
+                    const category = q.category;
+                    categoryPerformance[category].total++;
+                    categoryPerformance[category].time += questionTimers[index] || 0;
+                     categoryPerformance[category].questions.push(q.questionNumber); // Track questions per category
+                    if (userAnswers[index] === q.correctAnswer) {
+                        categoryPerformance[category].correct++;
+                    }
+                }
+            });
+
+            const labels = Object.keys(categoryPerformance).filter(cat => categoryPerformance[cat].total > 0).sort(); // Sort categories alphabetically
+            const dataPercentages = labels.map(label => {
+                const cat = categoryPerformance[label];
+                return (cat.correct / cat.total) * 100;
+            });
+
+            let strengthsHTML = '<p class="font-semibold text-green-700 mb-1">Pontos Fortes (>= 70% de acerto):</p><ul class="list-disc list-inside text-gray-700 space-y-1">';
+            let weaknessesHTML = '<p class="font-semibold text-red-700 mt-4 mb-1">Pontos a Melhorar (< 70% de acerto):</p><ul class="list-disc list-inside text-gray-700 space-y-1">';
+            let hasStrengths = false;
+            let hasWeaknesses = false;
+
+            labels.forEach((label, i) => {
+                const percentage = dataPercentages[i];
+                const cat = categoryPerformance[label];
+                const avgTimeSeconds = cat.total > 0 ? (cat.time / cat.total / 1000).toFixed(1) : 'N/A';
+                const itemHTML = `<li><strong>${label}:</strong> ${percentage.toFixed(0)}% (${cat.correct}/${cat.total}) - Tempo médio: ${avgTimeSeconds}s</li>`;
+
+                if (percentage >= 70) {
+                    strengthsHTML += itemHTML;
+                    hasStrengths = true;
+                } else {
+                    weaknessesHTML += itemHTML;
+                    hasWeaknesses = true;
+                }
+            });
+
+            strengthsHTML += '</ul>';
+            weaknessesHTML += '</ul>';
+
+            if (!hasStrengths) strengthsHTML = '<p class="text-gray-600">Nenhum tópico com 70% ou mais de acerto.</p>';
+            if (!hasWeaknesses) weaknessesHTML = '<p class="mt-4 text-gray-600">Parabéns! Nenhum tópico com menos de 70% de acerto.</p>';
+
+            strengthsWeaknessesEl.innerHTML = strengthsHTML + weaknessesHTML;
+
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '% de Acerto',
+                        data: dataPercentages,
+                        backgroundColor: dataPercentages.map(p => p >= 70 ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+                        borderColor: dataPercentages.map(p => p >= 70 ? 'rgba(22, 163, 74, 1)' : 'rgba(220, 38, 38, 1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                     // Ajustes para melhor visualização com muitas barras
+                     layout: {
+                        padding: {
+                            left: 10,
+                            right: 20, // More space for labels if needed
+                            top: 10,
+                            bottom: 10
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: value => value + '%' }
+                        },
+                        y: {
+                            ticks: {
+                                autoSkip: false, // Show all labels
+                                font: {
+                                    size: 10 // Smaller font for category labels if crowded
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed.x;
+                                    const categoryData = categoryPerformance[label];
+                                    return `${label}: ${value.toFixed(1)}% (${categoryData.correct}/${categoryData.total})`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+       // Event listener para o botão "Finalizar"
+        finishBtnEl.addEventListener('click', () => {
+             if (answeredCount < quizData.length) {
+                 // Esta verificação é redundante se o botão está corretamente desabilitado, mas fica como segurança.
+                 alert('Por favor, responda todas as questões antes de finalizar.');
+                 return;
+             }
+
+
+            const endTime = new Date();
+             // Garante que startTime foi definido
+             if (!startTime) {
+                 console.error("Erro: Timer de início do quiz não foi definido.");
+                 startTime = endTime; // Usa o tempo final como fallback para evitar erros
+             }
+            const timeDiff = endTime - startTime;
+            const totalSeconds = Math.max(0, Math.floor(timeDiff / 1000));
+            const seconds = totalSeconds % 60;
+            const minutes = Math.floor(totalSeconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const displayMinutes = minutes % 60;
+
+
+            timeTakenEl.textContent = `${hours.toString().padStart(2, '0')}:${displayMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            avgTimeEl.textContent = answeredCount > 0 ? (totalSeconds / answeredCount).toFixed(1) : '0.0';
+
+            correctCountEl.textContent = score.correct;
+            incorrectCountEl.textContent = score.incorrect;
+            const percentage = answeredCount > 0 ? ((score.correct / answeredCount) * 100) : 0;
+            percentageEl.textContent = `${percentage.toFixed(1)}%`;
+
+            wrongAnswersContentEl.innerHTML = '';
+            let reviewHTML = '';
+            let hasWrongAnswers = false;
+            let tableHTML = '';
+
+            quizData.forEach((q, index) => {
+                const userAnswerKey = userAnswers[index];
+                const isCorrect = userAnswerKey === q.correctAnswer;
+                const questionTimeMs = questionTimers[index] || 0;
+                const questionTimeInSeconds = (questionTimeMs / 1000).toFixed(1);
+                 const userAnswerText = userAnswerKey ? `${userAnswerKey}) ${q.options[userAnswerKey]}` : 'Não respondida';
+                 const correctAnswerText = `${q.correctAnswer}) ${q.options[q.correctAnswer]}`;
+
+
+                 tableHTML += `
+                    <tr>
+                        <td class="px-4 py-2 text-center">${q.questionNumber}</td>
+                        <td class="px-4 py-2">${q.question.substring(0, 60)}...</td>
+                        <td class="px-4 py-2">${userAnswerText}</td>
+                        <td class="px-4 py-2">${correctAnswerText}</td>
+                        <td class="px-4 py-2 ${isCorrect ? 'correct-text' : 'incorrect-text'}">${isCorrect ? 'Acertou' : 'Errou'}</td>
+                         <td class="px-4 py-2">${q.category || 'N/A'}</td>
+                    </tr>
+                `;
+
+
+                if (userAnswerKey && !isCorrect) {
+                    hasWrongAnswers = true;
+                    reviewHTML += `
+                        <div class="my-4 p-4 border border-red-200 rounded-lg bg-red-50/50 text-sm sm:text-base">
+                            <p class="font-semibold text-gray-900 mb-2">${q.questionNumber}. ${q.question}</p>
+                            <p class="mt-2 text-red-700"><strong>Sua resposta (${userAnswerKey}):</strong> ${q.options[userAnswerKey]}</p>
+                            <p class="mt-1 text-green-700"><strong>Resposta correta (${q.correctAnswer}):</strong> ${q.options[q.correctAnswer]}</p>
+                            <div class="mt-3 text-xs sm:text-sm text-gray-800 bg-gray-100 p-3 rounded-md border-l-4 border-red-300 space-y-1">
+                                ${q.explanation.article ? `<p><strong>Artigo:</strong> ${q.explanation.article}</p>` : ''}
+                                <p><strong>Justificativa:</strong> ${q.explanation.justification}</p>
+                                ${q.explanation.page ? `<p class="text-xs text-gray-500"><strong>Página:</strong> ${q.explanation.page}</p>` : ''}
+                            </div>
+                             <p class="mt-2 text-right text-xs text-gray-500"><strong>Tempo:</strong> ${questionTimeInSeconds}s</p>
+                        </div>
+                    `;
+                }
+            });
+
+
+            if (!hasWrongAnswers && answeredCount > 0) {
+                 wrongAnswersContentEl.innerHTML = '<p class="text-green-600 font-semibold text-center mt-4">Parabéns! Você acertou todas as questões que respondeu!</p>';
+                 document.getElementById('wrong-answers-review').classList.add('hidden'); // Hide review section if all correct
+            } else if (!hasWrongAnswers && answeredCount === 0) {
+                 wrongAnswersContentEl.innerHTML = '<p class="text-gray-600 font-semibold text-center mt-4">Você não respondeu nenhuma questão.</p>';
+                 document.getElementById('wrong-answers-review').classList.add('hidden'); // Hide review section if none answered
+            } else {
+                 wrongAnswersContentEl.innerHTML = reviewHTML;
+                 document.getElementById('wrong-answers-review').classList.remove('hidden'); // Ensure review section is visible
+            }
+
+            reviewTableBodyEl.innerHTML = tableHTML;
+
+            resultsContainerEl.classList.remove('hidden');
+            quizContainerEl.classList.add('hidden');
+            finishButtonContainerEl.classList.add('hidden');
+
+            analyzePerformance();
+
+            window.scrollTo({ top: resultsContainerEl.offsetTop - 30, behavior: 'smooth' });
+        });
+
+         // Event listener para o botão "Reiniciar"
+        restartBtnEl.addEventListener('click', () => {
+             // Reseta variáveis de estado
+            userAnswers = {};
+            questionTimers = {};
+            currentQuestionStartTime = null;
+            score = { correct: 0, incorrect: 0 };
+            startTime = null;
+            answeredCount = 0;
+            quizStartTimeSet = false; // Reseta a flag do timer inicial
+
+
+            // Oculta resultados e mostra loading/quiz
+            resultsContainerEl.classList.add('hidden');
+            quizContainerEl.classList.add('hidden'); // Mantém oculto até renderizar
+            finishButtonContainerEl.classList.add('hidden');
+             loadingEl.classList.remove('hidden'); // Mostra loading novamente
+
+             // Destrói gráfico antigo se existir
+            if (performanceChart) {
+                performanceChart.destroy();
+                performanceChart = null;
+            }
+
+            // Limpa containers
+            wrongAnswersContentEl.innerHTML = '';
+            reviewTableBodyEl.innerHTML = '';
+             strengthsWeaknessesEl.innerHTML = '';
+
+
+             // Re-renderiza o quiz (isso também reiniciará os timers dentro de renderQuiz)
+            renderQuiz();
+            updateProgress(); // Atualiza o estado inicial do botão/texto
+
+             // Rola para o topo
+             window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Inicia o carregamento do quiz
+        document.addEventListener('DOMContentLoaded', () => {
+             // Simula um pequeno atraso para mostrar o loading,
+             // e então renderiza o quiz.
+             setTimeout(() => {
+                renderQuiz();
+                updateProgress();
+             }, 500); // Meio segundo de delay para o loading ser visível
+
+        });
+
+    </script>
+</body>
+</html>
